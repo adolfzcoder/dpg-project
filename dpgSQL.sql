@@ -2,23 +2,22 @@ CREATE DATABASE childChurchQR;
 USE childChurchQR;
 
 CREATE TABLE teacher (
-    teacher_id_number INT PRIMARY KEY,
+    teacher_id_number CHAR(11) PRIMARY KEY,
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
-    phone_number VARCHAR(30) UNIQUE,
-    email VARCHAR(255) UNIQUE,
-    office_room_number INT,
-    home_address VARCHAR(30),
-    salary INT
+    phone_number VARCHAR(30) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    office_room_number INT NOT NULL -- could be in the same room, but sharing, so cant be unique
 );
 
 
 CREATE TABLE class (
     class_name VARCHAR(30) PRIMARY KEY,
     start_time TIME,
+    has_projector BIT,
     end_time TIME,
     venue VARCHAR(30),
-    teacher_id_number INT UNIQUE, 
+    teacher_id_number CHAR(11) UNIQUE, 
     FOREIGN KEY (teacher_id_number) REFERENCES teacher(teacher_id_number)
 );
 
