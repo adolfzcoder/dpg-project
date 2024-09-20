@@ -13,11 +13,11 @@ CREATE TABLE teacher (
 
 CREATE TABLE class (
     class_name VARCHAR(30) PRIMARY KEY,
-    start_time TIME,
-    has_projector BIT,
-    end_time TIME,
-    venue VARCHAR(30),
-    teacher_id_number CHAR(11) UNIQUE, 
+    start_time TIME NOT NULL,
+    venue VARCHAR(30) NOT NULL,
+    has_projector BIT NULL,
+    end_time TIME NOT NULL,
+    teacher_id_number CHAR(11) NOT NULL, 
     FOREIGN KEY (teacher_id_number) REFERENCES teacher(teacher_id_number)
 );
 
