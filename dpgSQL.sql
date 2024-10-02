@@ -1,5 +1,6 @@
 CREATE DATABASE childChurchQR;
  USE childChurchQR;
+
 CREATE TABLE admin(
     id INT IDENTITY PRIMARY KEY,
     first_name VARCHAR(30) NOT NULL,
