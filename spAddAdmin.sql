@@ -5,7 +5,7 @@
 -- DELETE FROM adminTable
 
 
-ALTER PROCEDURE addAdmin
+CREATE PROCEDURE spAddAdmin
 @username VARCHAR(30),
 @password VARCHAR(50),
 @email VARCHAR(45),
@@ -17,7 +17,7 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        --check if the email already exists
+        -- Check if the email already exists
         SELECT @email_exists = COUNT(*)
         FROM adminTable
         WHERE email = @email;
@@ -29,7 +29,7 @@ BEGIN
             RETURN;
         END
 
-       
+        -- Insert into adminTable
         INSERT INTO adminTable (username, password, email, phone_number)
         VALUES (@username, @password, @email, @phone_number);
 
@@ -43,4 +43,3 @@ BEGIN
         PRINT ERROR_MESSAGE();  
     END CATCH;
 END
-

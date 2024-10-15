@@ -1,9 +1,9 @@
-EXEC adminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
+EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
 
 
 ALTER PROCEDURE adminLoginVerification
 @email VARCHAR(45),
-@password VARCHAR(50)
+@password VARCHAR(255)
 AS
 BEGIN
     DECLARE @stored_password VARCHAR(50);
