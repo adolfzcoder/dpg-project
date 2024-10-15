@@ -65,6 +65,17 @@ emergency_contact_last_name VARCHAR(30),
  FOREIGN KEY (qrcode_id) REFERENCES qrcode(qrcode_id)
  );
 
+CREATE TABLE admin (
+    admin_id INT PRIMARY KEY IDENTITY,
+    username VARCHAR(30) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,  
+    email VARCHAR(45) NOT NULL UNIQUE,
+    role VARCHAR(20) DEFAULT 'admin',  --  'admin' or  'superadmin', superdmins can add other admins
+    phone_number CHAR(10) UNIQUE,      
+    created_at DATETIME DEFAULT GETDATE()  
+);
+
+
  CREATE TABLE audit_log (
  log_id INT PRIMARY KEY IDENTITY,
  action VARCHAR(30) NOT NULL,
