@@ -65,7 +65,7 @@ emergency_contact_last_name VARCHAR(30),
  FOREIGN KEY (qrcode_id) REFERENCES qrcode(qrcode_id)
  );
 
-CREATE TABLE admin (
+CREATE TABLE adminTable (
     admin_id INT PRIMARY KEY IDENTITY,
     username VARCHAR(30) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,  
