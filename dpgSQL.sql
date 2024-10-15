@@ -40,7 +40,8 @@ CREATE TABLE child (
     last_name VARCHAR(30) NOT NULL,
     date_of_birth DATE,
     emergency_contact_number CHAR(10) NOT NULL UNIQUE, 
-    emergency_contact_name VARCHAR(30),
+    emergency_contact_first_name VARCHAR(30),
+    emergency_contact_last_name VARCHAR(30),
     class_name VARCHAR(30),
     FOREIGN KEY (class_name) REFERENCES class(class_name)
 );
