@@ -1,12 +1,30 @@
 -- these procedures can be used to quickly view the stored data instead of using longer select statement
-
+USE childChurchQrSystem
 CREATE PROC viewAdmin
 AS
 BEGIN
-SELECT * FROM adminTable
-END;
 
+SELECT * FROM adminTable
+
+END
 -- EXEC viewAdmin
+
+
+CREATE PROC viewChild
+AS
+BEGIN
+
+SELECT * FROM child
+
+END
+
+CREATE PROC viewClass
+AS
+BEGIN
+	SELECT * FROM class
+END
+-- EXEC viewClass
+-- EXEC viewChild
 
 CREATE PROC viewTeacher
 AS
@@ -14,13 +32,30 @@ BEGIN
 
 SELECT * FROM teacher
 
-END;
+END
+
 
 -- EXEC viewTeacher
 
 
-EXEC addAdmin 'Adolf', 'Pass@123', 'adolfdavid17@gmail.com', '0816166875'
-EXEC viewAdmin
+CREATE PROC viewParent
+AS
+BEGIN
+
+SELECT * FROM parent
+
+END
+
+CREATE PROC viewQr
+AS
+BEGIN
+
+SELECT * FROM qrCode
+
+END
+
+-- EXEC addAdmin 'Adolf', 'Pass@123', 'adolfdavid17@gmail.com', '0816166875'
+-- EXEC viewAdmin
 
 -- DELETE FROM adminTable
 
@@ -65,12 +100,13 @@ BEGIN
 END
 
 
+EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
+-- DELETE  FROM adminTable
 
--- EXEC adminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
 
-ALTER PROCEDURE adminLoginVerification
+CREATE PROCEDURE spAdminLoginVerification
 @email VARCHAR(45),
-@password VARCHAR(255)
+@password VARCHAR(50)
 AS
 BEGIN
     DECLARE @stored_password VARCHAR(50);
@@ -84,7 +120,7 @@ BEGIN
 
     IF @email_exists > 0
 		BEGIN
-			-- get stored password
+			-- Retrieve the stored password
 			SELECT @stored_password = password
 			FROM adminTable
 			WHERE email = @email;
@@ -106,11 +142,44 @@ BEGIN
 		END
     
 END;
+EXEC viewChild;
+EXEC viewClass
+EXEC viewTeacher
+DELETE FROM teacher
+INSERT INTO teacher (teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number)
+VALUES 
+('98031712345', 'Petrus', 'Nangolo', '0812345678', 'petrusnangolo@example.com', 'Windhoek', 101),
+('85020256789', 'Maria', 'Kandjii', '0818765432', 'mariakandjii@example.com', 'Swakopmund', 102),
+('90030391012', 'Johannes', 'Shilongo', '0811122334', 'johannesshilongo@example.com', 'Walvis Bay', 103),
+('87040411223', 'Elina', 'Amutenya', '0812233445', 'elinaamutenya@example.com', 'Oshakati', 104),
+('95050533444', 'Samuel', 'Kaunda', '0813344556', 'samuelkaunda@example.com', 'Rundu', 105);
 
 
-CREATE PROCEDURE spGenerateQrCode
+INSERT INTO class (class_name, start_time, venue, has_projector, end_time, teacher_id_number)
+VALUES 
+('Math 101', '08:00:00', 'Room 201', 1, '09:30:00', '98031712345'),
+('Science 101', '09:45:00', 'Room 202', 0, '11:15:00', '85020256789'),
+('History 101', '11:30:00', 'Room 203', 1, '13:00:00', '90030391012'),
+('Art 101', '13:15:00', 'Room 204', 0, '14:45:00', '87040411223'),
+('Music 101', '15:00:00', 'Room 205', 1, '16:30:00', '95050533444');
+
+INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
+VALUES 
+('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek');
+
+INSERT INTO child (child_id, first_name, last_name, date_of_birth, parent_id_number)
+VALUES 
+('John', 'Kavango', '2010-05-15', '82010154321');
+
+EXEC spGenerateQrCode 'John', 'Kavango'
+
+EXEC viewChild
+
+SELECT qr_code_url FROM qrcode 
+EXEC viewQr
+ALTER PROCEDURE spGenerateQrCode
 @first_name VARCHAR(30),
-@last_name VARCHAR(30),
+@last_name VARCHAR(30)
 AS
 BEGIN
     DECLARE @qr_code_url VARCHAR(255);
@@ -134,7 +203,7 @@ BEGIN
     END
 
     SELECT @parent_id_number = parent_id_number
-    FROM parent_child
+    FROM child
     WHERE child_id = @child_id;
 
     IF @parent_id_number IS NULL
@@ -151,6 +220,18 @@ BEGIN
     PRINT 'QR code generated and stored successfully';
 END;
 
+-- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
+-- VALUES 
+-- ('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek')
+
+
+-- exec viewParent
+-- ('John', 'Kavango', '2010-05-15', '0811234567', 'Peter', 'Kavango', 'Math 101', '82010154321'),
+
+EXEC spAddChild 'John', 'Kavango', '2010-05-15', '0811234567', 'Peter', 'Kavango', 'Math 101', '82010154321'
+
+EXEC viewParent
+EXEC viewChild
 
 CREATE PROCEDURE spAddChild
     @child_first_name VARCHAR(30),
@@ -164,7 +245,7 @@ CREATE PROCEDURE spAddChild
 AS
 BEGIN
     BEGIN TRY
-        -- check if the parent exists
+        -- Check if the parent exists
         IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
         BEGIN
             -- Check if the parent already has a child
