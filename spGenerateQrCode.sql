@@ -24,7 +24,7 @@ BEGIN
     END
 
     SELECT @parent_id_number = parent_id_number
-    FROM parent_child
+    FROM child
     WHERE child_id = @child_id;
 
     IF @parent_id_number IS NULL

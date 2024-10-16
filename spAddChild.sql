@@ -1,9 +1,13 @@
-INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
-VALUES 
-('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek')
+-- How to use this procedure
 
-EXEC spAddChild 'John', 'Kavango', '2010-05-15', '0811234567', 'Peter', 'Kavango', 'Math 101', '82010154321'
+-- EXEC spAddChild 'John', 'Kavango', '2010-05-15', '0811234567', 'Peter', 'Kavango', 'Math 101', '82010154321'
 
+
+
+
+
+-- EXEC viewParent
+-- EXEC viewChild
 CREATE PROCEDURE spAddChild
     @child_first_name VARCHAR(30),
     @child_last_name VARCHAR(30),
@@ -16,15 +20,15 @@ CREATE PROCEDURE spAddChild
 AS
 BEGIN
     BEGIN TRY
-        -- Check if the parent exists
+        -- check if the parent exists
         IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
         BEGIN
             -- Check if the parent already has a child
             IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
             BEGIN
                 -- Insert the child
-                INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_name, parent_id_number)
-                VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_name, @parent_id_number);
+                INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_id, parent_id_number)
+                VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, (SELECT class_id FROM class WHERE class_name = @class_name), @parent_id_number);
 
                 PRINT 'Child has been successfully entered into the system.';
             END
