@@ -12,7 +12,8 @@ CREATE TABLE teacher (
 );
 
 CREATE TABLE class (
-    class_name VARCHAR(30) PRIMARY KEY,
+    class_id INT PRIMARY KEY IDENTITY,
+    class_name VARCHAR(30),
     start_time TIME NOT NULL,
     venue VARCHAR(30) NOT NULL,
     has_projector BIT NULL,
@@ -38,10 +39,10 @@ CREATE TABLE child (
     emergency_contact_number CHAR(10) NOT NULL UNIQUE,
     emergency_contact_first_name VARCHAR(30),
     emergency_contact_last_name VARCHAR(30),
-    class_name VARCHAR(30),
+    class_id VARCHAR(30),
     parent_id_number CHAR(11) NOT NULL UNIQUE,  -- Enforce one-to-one relationship
     FOREIGN KEY (parent_id_number) REFERENCES parent(parent_id_number),
-    FOREIGN KEY (class_name) REFERENCES class(class_name)
+    FOREIGN KEY (class_id) REFERENCES class(class_id)
 );
 
 CREATE TABLE qrcode (
