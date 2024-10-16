@@ -177,7 +177,7 @@ EXEC viewChild
 
 SELECT qr_code_url FROM qrcode 
 EXEC viewQr
-ALTER PROCEDURE spGenerateQrCode
+CREATE PROCEDURE spGenerateQrCode
 @first_name VARCHAR(30),
 @last_name VARCHAR(30)
 AS
@@ -188,6 +188,7 @@ BEGIN
     DECLARE @parent_id_number CHAR(11);
     DECLARE @timestamp DATETIME = GETDATE();
     DECLARE @child_id INT;
+	DECLARE @picked_up BINARY;
 
     SET @drop_off_time = CONVERT(TIME, @timestamp);
     SET @drop_off_date = CONVERT(DATE, @timestamp);
@@ -201,24 +202,36 @@ BEGIN
         PRINT 'Child not found';
         RETURN;
     END
-
     SELECT @parent_id_number = parent_id_number
     FROM child
     WHERE child_id = @child_id;
+
+
+	SELECT @picked_up = picked_up 
+	FROM qrcode
+	WHERE child_id = @child_id;
 
     IF @parent_id_number IS NULL
     BEGIN
         PRINT 'Parent not found';
         RETURN;
     END
-
-    SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + '_' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120);
-
-    INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id)
-    VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id);
+	IF @picked_up = 1
+	BEGIN
+         SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + '_' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120) + '&color=f3846c';
+    INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id, picked_up)
+    VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id, 0);
 
     PRINT 'QR code generated and stored successfully';
+	END
+
+	ELSE
+	BEGIN
+	PRINT 'Cannot generate qr code. Child is not yet picked up';
+	END;
 END;
+
+
 
 -- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
 -- VALUES 

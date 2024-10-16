@@ -77,10 +77,8 @@ CREATE TABLE adminTable (
 CREATE TABLE audit_log (
     log_id INT PRIMARY KEY IDENTITY,
     action VARCHAR(30) NOT NULL,
-    record_id INT NOT NULL,
-    old_values VARCHAR(MAX),
     new_values VARCHAR(MAX),
     timestamp DATETIME,
-    performed_by VARCHAR(30),
+    performed_by_admin_id VARCHAR(30),
     table_name VARCHAR(255) NOT NULL
 );

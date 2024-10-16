@@ -1,58 +1,54 @@
-
-CREATE PROCEDURE spAdminLoginVerification
-@email VARCHAR(45),
-@password VARCHAR(255)
+CREATE PROCEDURE spGenerateQrCode
+@first_name VARCHAR(30),
+@last_name VARCHAR(30)
 AS
 BEGIN
-    DECLARE @stored_password VARCHAR(50);
-	DECLARE @email_exists INT;
-	DECLARE @admin_username VARCHAR(30);
-	DECLARE @admin_role VARCHAR(20);
-	DECLARE @admin_email VARCHAR(45);
+    DECLARE @qr_code_url VARCHAR(255);
+    DECLARE @drop_off_time TIME;
+    DECLARE @drop_off_date DATE;
+    DECLARE @parent_id_number CHAR(11);
+    DECLARE @timestamp DATETIME = GETDATE();
+    DECLARE @child_id INT;
+	DECLARE @picked_up BINARY;
+
+    SET @drop_off_time = CONVERT(TIME, @timestamp);
+    SET @drop_off_date = CONVERT(DATE, @timestamp);
+
+    SELECT @child_id = child_id
+    FROM child
+    WHERE first_name = @first_name AND last_name = @last_name;
+
+    IF @child_id IS NULL
+    BEGIN
+        PRINT 'Child not found';
+        RETURN;
+    END
+    SELECT @parent_id_number = parent_id_number
+    FROM child
+    WHERE child_id = @child_id;
 
 
+	SELECT @picked_up = picked_up 
+	FROM qrcode
+	WHERE child_id = @child_id;
 
+    IF @parent_id_number IS NULL
+    BEGIN
+        PRINT 'Parent not found';
+        RETURN;
+    END
+	IF @picked_up = 1
+	BEGIN
+         SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + '_' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120) + '&color=f3846c';
+    INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id, picked_up)
+    VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id, 0);
 
-	-- Check if the email already exists
-    SELECT @email_exists = COUNT(*)
-    FROM adminTable
-    WHERE email = @email;
+    PRINT 'QR code generated and stored successfully';
+	END
 
-    IF @email_exists > 0
-		BEGIN
-			-- get stored password
-			SELECT @stored_password = password,
-			@admin_username = username,
-			@admin_role = role,
-			@admin_email = email
-			FROM adminTable
-			WHERE email = @email;
-
-
-			-- Compare the passwords
-			IF @stored_password = @password
-			BEGIN
-				PRINT 'Succesfully logged in';
-				 -- Set session context values
-
-				EXEC sp_set_session_context @key = N'admin_username', @value = @admin_username;
-				EXEC sp_set_session_context @key = N'admin_role', @value = @admin_role;
-				EXEC sp_set_session_context @key = N'admin_email', @value = @email;
-
-				-- SELECT -- outputting for testing the logged in admin
-                -- SESSION_CONTEXT(N'admin_username') AS AdminUsername,
-                -- SESSION_CONTEXT(N'admin_role') AS AdminRole,
-                -- SESSION_CONTEXT(N'admin_email') AS AdminEmail;
-			END
-			ELSE
-			BEGIN
-				PRINT 'Password is incorrect';
-			END
-		END
-		ELSE
-		BEGIN
-			PRINT 'Email Does not Exist';
-		END
-    
+	ELSE
+	BEGIN
+	PRINT 'Cannot generate qr code. Child is not yet picked up';
+	END;
 END;
 
