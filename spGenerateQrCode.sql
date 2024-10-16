@@ -33,7 +33,7 @@ BEGIN
         RETURN;
     END
 
-    SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + '_' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120);
+    SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + '_' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120) + '&color=f3846c';
 
     INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id)
     VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id);
