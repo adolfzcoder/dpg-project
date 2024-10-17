@@ -4,7 +4,7 @@
 
 -- EXEC viewParent
 -- EXEC viewChild
-CREATE PROCEDURE spAddChild
+CREATE PROC spAddChild
     @child_first_name VARCHAR(30),
     @child_last_name VARCHAR(30),
     @date_of_birth DATE,
