@@ -1,3 +1,6 @@
+EXEC spAddTeacher '0008198803', 'Joana', 'L9]jiko', '0817194729', 'jlojikod@yahoo.com', 'Omangongatti', '604'
+EXEC viewTeacher
+
 ALTER PROCEDURE spAddTeacher
 @teacher_id_number CHAR(11),
 @first_name VARCHAR(30),
