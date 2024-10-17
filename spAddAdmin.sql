@@ -14,32 +14,54 @@ AS
 BEGIN
     DECLARE @email_exists INT;
 
-    BEGIN TRY
-        BEGIN TRANSACTION;
-
-        -- Check if the email already exists
-        SELECT @email_exists = COUNT(*)
-        FROM adminTable
-        WHERE email = @email;
-
-        IF @email_exists > 0
+    --make sure username is not empty and contains only letters
+    IF @username NOT LIKE '%[^A-Za-z]%' AND LEN(@username) > 0
+    BEGIN
+        -- same with phone number, only contianing number and not empty
+        IF @phone_number NOT LIKE '%[^0-9]%' AND LEN(@phone_number) = 10
         BEGIN
-            PRINT 'Email already exists';
-            ROLLBACK TRANSACTION;
-            RETURN;
+            --email should be in valid email format
+            IF @email LIKE '%_@__%.__%'
+            BEGIN
+                BEGIN TRY
+                    BEGIN TRANSACTION;
+
+                    -- Check if the email already exists
+                    SELECT @email_exists = COUNT(*)
+                    FROM adminTable
+                    WHERE email = @email;
+
+                    IF @email_exists > 0
+                    BEGIN
+                        PRINT 'Email already exists';
+                        ROLLBACK TRANSACTION;
+                        RETURN;
+                    END
+
+                    -- Insert into adminTable
+                    INSERT INTO adminTable (username, password, email, phone_number)
+                    VALUES (@username, @password, @email, @phone_number);
+
+                    COMMIT TRANSACTION;
+                    PRINT 'Admin record added successfully.';
+                END TRY
+                BEGIN CATCH
+                    ROLLBACK TRANSACTION;
+                    PRINT 'There was an error inserting into system';
+                END CATCH
+            END
+            ELSE
+            BEGIN
+                PRINT 'Error: Invalid email format.';
+            END
         END
-
-        -- Insert into adminTable
-        INSERT INTO adminTable (username, password, email, phone_number)
-        VALUES (@username, @password, @email, @phone_number);
-
-        COMMIT TRANSACTION;
-
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-
-        PRINT 'Could not insert data, please try again';
-        PRINT ERROR_MESSAGE();  
-    END CATCH;
-END
+        ELSE
+        BEGIN
+            PRINT 'Error: Phone number should contain only numbers and be exactly 10 characters long.';
+        END
+    END
+    ELSE
+    BEGIN
+        PRINT 'Error: Username should contain only letters.';
+    END
+END;

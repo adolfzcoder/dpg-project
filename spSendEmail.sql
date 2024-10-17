@@ -1,21 +1,19 @@
-CREATE PROCEDURE spSendEmail
-    @to_email VARCHAR(255),
-    @subject VARCHAR(255),
-    @body VARCHAR(MAX)
-AS
-BEGIN
-    SET NOCOUNT ON;
+DECLARE @email_body nvachar(max)
 
-    DECLARE @api_key VARCHAR(255) = 'YOUR_SENDGRID_API_KEY'; -- Replace with your actual API key
-    DECLARE @url VARCHAR(255) = 'https://api.sendgrid.com/v3/mail/send';
-    DECLARE @cmd VARCHAR(1000);
+SELECT @email_body = N'<br/><br>' + 'Here is your QR code: ' + @qr_code_url + '<br/><br>' + 'Thank you for using our service!'
 
-    SET @cmd = 'curl -X POST ' + @url +
-               ' -H "Authorization: Bearer ' + @api_key + '"' +
-               ' -H "Content-Type: application/json"' +
-               ' -d "{ \"personalizations\": [ { \"to\": [ { \"email\": \"' + @to_email + '\" } ] } ], \"subject\": \"' + @subject + '\" }, \"content\": [ { \"type\": \"text/plain\", \"value\": \"' + @body + '\" } ] }"';
 
-    EXEC xp_cmdshell @cmd;
+EXEC msdo.dbo.sp_send_dbmail
+@profile_name = 'Gmail',    
+@recipients = 'adolfdavid17@gmail.com',
+@copy_recepients = Null,
+@blind_copy_recepients = Null,
+@subject = 'QR Code',
+@body = @email_body,
+@body_format = 'HTML',
+@importance = 'High',
+@sensitivity = 'Normal',
+@file_attachments = @qr_code_url,
+@query = 'SELECT * FROM qrcode WHERE qr_code_url = @qr_code_url'
 
-    PRINT 'Email sent successfully';
-END;
+
