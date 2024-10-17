@@ -54,8 +54,9 @@ SELECT * FROM qrCode
 
 END
 
--- EXEC addAdmin 'Adolf', 'Pass@123', 'adolfdavid17@gmail.com', '0816166875'
--- EXEC viewAdmin
+
+EXEC spAddAdmin 'Adolf', 'Pass@123', 'adolfdavid17@gmail.com', '0816166875'
+EXEC viewAdmin
 
 -- DELETE FROM adminTable
 
@@ -104,13 +105,22 @@ EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
 -- DELETE  FROM adminTable
 
 
-CREATE PROCEDURE spAdminLoginVerification
+EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
+
+
+ALTER PROCEDURE spAdminLoginVerification
 @email VARCHAR(45),
-@password VARCHAR(50)
+@password VARCHAR(255)
 AS
 BEGIN
     DECLARE @stored_password VARCHAR(50);
 	DECLARE @email_exists INT;
+	DECLARE @admin_username VARCHAR(30);
+	DECLARE @admin_role VARCHAR(20);
+	DECLARE @admin_email VARCHAR(45);
+	DECLARE @admin_id INT;
+
+
 
 
 	-- Check if the email already exists
@@ -120,8 +130,12 @@ BEGIN
 
     IF @email_exists > 0
 		BEGIN
-			-- Retrieve the stored password
-			SELECT @stored_password = password
+			-- get stored password
+			SELECT @stored_password = password,
+			@admin_username = username,
+			@admin_role = role,
+			@admin_email = email,
+			@admin_id = admin_id
 			FROM adminTable
 			WHERE email = @email;
 
@@ -130,6 +144,17 @@ BEGIN
 			IF @stored_password = @password
 			BEGIN
 				PRINT 'Succesfully logged in';
+				 -- Set session context values
+
+				EXEC sp_set_session_context @key = N'admin_username', @value = @admin_username;
+				EXEC sp_set_session_context @key = N'admin_role', @value = @admin_role;
+				EXEC sp_set_session_context @key = N'admin_email', @value = @email;
+				EXEC sp_set_session_context @key = N'admin_id', @value = @admin_id;
+
+				-- SELECT -- outputting for testing the logged in admin
+                -- SESSION_CONTEXT(N'admin_username') AS AdminUsername,
+                -- SESSION_CONTEXT(N'admin_role') AS AdminRole,
+                -- SESSION_CONTEXT(N'admin_email') AS AdminEmail;
 			END
 			ELSE
 			BEGIN
@@ -142,6 +167,9 @@ BEGIN
 		END
     
 END;
+
+
+
 EXEC viewChild;
 EXEC viewClass
 EXEC viewTeacher
@@ -165,19 +193,24 @@ VALUES
 
 INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
 VALUES 
+('99051790321', 'Adolf', 'Chikombo', '0816166785', 'adavid@muhoko.org', 'Otjiarare')
+
+,
 ('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek');
 
 INSERT INTO child (child_id, first_name, last_name, date_of_birth, parent_id_number)
 VALUES 
 ('John', 'Kavango', '2010-05-15', '82010154321');
 
+
+DELETE FROM qrcode
 EXEC spGenerateQrCode 'John', 'Kavango'
-
-EXEC viewChild
-
-SELECT qr_code_url FROM qrcode 
 EXEC viewQr
-CREATE PROCEDURE spGenerateQrCode
+EXEC viewChild
+SELECT qr_code_url FROM qrcode 
+
+DELETE FROM qrcode
+ALTER PROCEDURE spGenerateQrCode
 @first_name VARCHAR(30),
 @last_name VARCHAR(30)
 AS
@@ -188,7 +221,7 @@ BEGIN
     DECLARE @parent_id_number CHAR(11);
     DECLARE @timestamp DATETIME = GETDATE();
     DECLARE @child_id INT;
-	DECLARE @picked_up BINARY;
+	DECLARE @picked_up BIT;
 
     SET @drop_off_time = CONVERT(TIME, @timestamp);
     SET @drop_off_date = CONVERT(DATE, @timestamp);
@@ -216,7 +249,7 @@ BEGIN
         PRINT 'Parent not found';
         RETURN;
     END
-	IF @picked_up = 1
+	IF @picked_up = 1 OR @picked_up IS NULL
 	BEGIN
          SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + '_' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120) + '&color=f3846c';
     INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id, picked_up)
@@ -230,8 +263,6 @@ BEGIN
 	PRINT 'Cannot generate qr code. Child is not yet picked up';
 	END;
 END;
-
-
 
 -- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
 -- VALUES 
