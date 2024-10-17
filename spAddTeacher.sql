@@ -1,4 +1,4 @@
-EXEC spAddTeacher '0008198803', 'Joana', 'L9]jiko', '0817194729', 'jlojikod@yahoo.com', 'Omangongatti', '604'
+EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404'
 EXEC viewTeacher
 
 ALTER PROCEDURE spAddTeacher
