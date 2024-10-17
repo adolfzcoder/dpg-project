@@ -65,6 +65,11 @@ EXEC viewAdmin
 --EXEC viewAdmin
 
 -- DELETE FROM adminTable
+-- EXEC addAdmin 'Adolf', 'Pass@123', 'adolfdavid17@gmail.com', '0816166875'
+-- Use this to test and see the values needed for this procedure
+--EXEC viewAdmin
+
+-- DELETE FROM adminTable
 
 
 CREATE PROCEDURE spAddAdmin
@@ -128,13 +133,12 @@ BEGIN
     END
 END;
 
+
 EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
 -- DELETE  FROM adminTable
 
 
 EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
-
-
 -- to keep track of the logged in admin, we use sessions, and we set the session context values for the logged in admin
 CREATE PROCEDURE spAdminLoginVerification
 @email VARCHAR(45),
@@ -149,7 +153,7 @@ BEGIN
     DECLARE @admin_id INT;
 
     BEGIN TRY
-        --email should be in valid email format
+                    --email should be in valid email format
 
         IF @email LIKE '%_@__%.__%'
         BEGIN
@@ -160,7 +164,7 @@ BEGIN
 
             IF @email_exists > 0
             BEGIN
-                -- Retrieeve stored pass
+                -- Get stored password
                 SELECT @stored_password = password,
                        @admin_username = username,
                        @admin_role = role,
@@ -173,15 +177,13 @@ BEGIN
                 IF @stored_password = @password
                 BEGIN
                     PRINT 'Successfully logged in';
-                    -- Set session  values
+                    -- Set session context values
                     EXEC sp_set_session_context @key = N'admin_username', @value = @admin_username;
                     EXEC sp_set_session_context @key = N'admin_role', @value = @admin_role;
                     EXEC sp_set_session_context @key = N'admin_email', @value = @admin_email;
                     EXEC sp_set_session_context @key = N'admin_id', @value = @admin_id;
 
-
--- outputting for testing the logged in admin
-                    -- SELECT 
+                    -- SELECT -- outputting for testing the logged in admin
                     -- SESSION_CONTEXT(N'admin_username') AS AdminUsername,
                     -- SESSION_CONTEXT(N'admin_role') AS AdminRole,
                     -- SESSION_CONTEXT(N'admin_email') AS AdminEmail;
@@ -261,35 +263,62 @@ BEGIN
     DECLARE @child_id INT;
     DECLARE @picked_up BIT;
 
-    SET @drop_off_time = CONVERT(TIME, @timestamp);
-    SET @drop_off_date = CONVERT(DATE, @timestamp);
+    BEGIN TRY
+    --make sure username is not empty and contains only letters
+        IF @first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@first_name) > 0
+        BEGIN
+        --make sure username is not empty and contains only letters
+            IF @last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@last_name) > 0
+            BEGIN
+                BEGIN TRANSACTION;
 
-    SELECT @child_id = child_id
-    FROM child
-    WHERE first_name = @first_name AND last_name = @last_name;
+                SET @drop_off_time = CONVERT(TIME, @timestamp);
+                SET @drop_off_date = CONVERT(DATE, @timestamp);
 
-    IF @child_id IS NULL
-    BEGIN
-        PRINT 'Child not found';
-        RETURN;
-    END
+                SELECT @child_id = child_id
+                FROM child
+                WHERE first_name = @first_name AND last_name = @last_name;
 
-    SELECT @parent_id_number = parent_id_number
-    FROM child
-    WHERE child_id = @child_id;
+                IF @child_id IS NULL
+                BEGIN
+                    PRINT 'Child not found';
+                    ROLLBACK TRANSACTION;
+                    RETURN;
+                END
 
-    IF @parent_id_number IS NULL
-    BEGIN
-        PRINT 'Parent not found';
-        RETURN;
-    END
+                SELECT @parent_id_number = parent_id_number
+                FROM child
+                WHERE child_id = @child_id;
 
-    SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + '_' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120) + '&color=f3846c&qzone=4';
+                IF @parent_id_number IS NULL
+                BEGIN
+                    PRINT 'Parent not found';
+                    ROLLBACK TRANSACTION;
+                    RETURN;
+                END
 
-    INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id)
-    VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id);
+                SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + '_' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120) + '&color=f3846c&qzone=4';
 
-    PRINT 'QR code generated and stored successfully';
+                INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id)
+                VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id);
+
+                COMMIT TRANSACTION;
+                PRINT 'QR code generated and stored successfully';
+            END
+            ELSE
+            BEGIN
+                PRINT 'Error: Last name should contain only letters.';
+            END
+        END
+        ELSE
+        BEGIN
+            PRINT 'Error: First name should contain only letters.';
+        END
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        PRINT 'An error occurred during QR code generation';
+    END CATCH
 END;
 -- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
 -- VALUES 
@@ -310,7 +339,7 @@ EXEC viewChild
 
 -- EXEC viewParent
 -- EXEC viewChild
-CREATE PROCEDURE spAddChild
+CREATE PROC spAddChild
     @child_first_name VARCHAR(30),
     @child_last_name VARCHAR(30),
     @date_of_birth DATE,
@@ -416,8 +445,6 @@ END;
 
 
 
-EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404'
-EXEC viewTeacher
 
 EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404'
 EXEC viewTeacher
