@@ -38,6 +38,6 @@ BEGIN
 
     INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id)
     VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id);
-
+    
     PRINT 'QR code generated and stored successfully';
 END;

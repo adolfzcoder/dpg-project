@@ -57,6 +57,7 @@ CREATE TABLE qrcode (
     parent_id_number CHAR(11) NOT NULL,
     child_id INT,
 	picked_up BIT,
+	file_path VARCHAR(255),
     FOREIGN KEY (parent_id_number) REFERENCES parent(parent_id_number),
     FOREIGN KEY (child_id) REFERENCES child(child_id)
 );  -- qr code is used for only one pickup, ie child can only be picked up once with that qr code
