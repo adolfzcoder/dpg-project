@@ -346,7 +346,6 @@ CREATE PROC spAddChild
     @emergency_contact_number CHAR(10),
     @emergency_contact_first_name VARCHAR(30),
     @emergency_contact_last_name VARCHAR(30),
-    @class_id VARCHAR(30),
     @parent_id_number CHAR(11)
 AS
 BEGIN
@@ -380,8 +379,8 @@ BEGIN
                                     -- make sure child exists befor einsert
                                         IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
                                         BEGIN
-                                            INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_id, parent_id_number)
-                                            VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_id, @parent_id_number);
+                                            INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, parent_id_number)
+                                            VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name,  @parent_id_number);
 
                                             COMMIT TRANSACTION;
                                             PRINT 'Child record added successfully.';
