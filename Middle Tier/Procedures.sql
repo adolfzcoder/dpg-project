@@ -133,6 +133,73 @@ BEGIN
     END
 END;
 
+CREATE PROCEDURE spAddParent
+    @parent_id_number CHAR (11),
+    @first_name VARCHAR(30),
+    @last_name VARCHAR(30),
+    @phone_number CHAR(10),
+    @email VARCHAR(45),
+    @town VARCHAR (30),
+    @gender CHAR(1)
+AS
+BEGIN
+    IF @first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@first_name) > 0
+    BEGIN
+        IF @last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@last_name) > 0
+        BEGIN
+            IF LEN(@phone_number) = 10
+            BEGIN
+                IF LOWER(@gender) LIKE 'male' OR LOWER(@gender) LIKE 'female'
+                BEGIN
+                    IF @gender LIKE 'male'
+                    BEGIN
+                        SET @gender = 'M';
+                    END
+                    ELSE
+                    BEGIN
+                        SET @gender = 'F';
+                    END
+
+                    IF @town NOT LIKE '%[^A-Za-z]%' AND LEN(@town) > 0
+                    BEGIN
+                        BEGIN TRY
+                            BEGIN TRANSACTION
+                                INSERT INTO parent(parent_id_number, first_name, last_name, phone_number, email, town, gender)
+                                VALUES(@parent_id_number, @first_name, @last_name, @phone_number, @email, @town, @gender)
+                            COMMIT TRANSACTION
+                            PRINT 'Parent record added successfully'
+                        END TRY
+                        BEGIN CATCH
+                            ROLLBACK TRANSACTION
+                            PRINT 'There was an error inserting into system';
+                        END CATCH
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Error: Town should only have letters, not special characters.';
+                    END
+                END
+                ELSE
+                BEGIN
+                    PRINT 'Please enter a valid gender, either male or female';
+                END
+            END
+            ELSE
+            BEGIN
+                PRINT 'Error: Phone number should be exactly 10 characters long.';
+            END
+        END
+        ELSE
+        BEGIN
+            PRINT 'Error: Last name should contain only letters.';
+        END
+    END
+    ELSE
+    BEGIN
+        PRINT 'Error: First name should contain only letters.';
+    END
+END;
+
 
 EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
 -- DELETE  FROM adminTable
@@ -367,6 +434,8 @@ BEGIN
                         --Namibian id numbers are only 11 digits long. if its longer than that or has special characters, throw error
                         IF @parent_id_number NOT LIKE '%[^0-9]%' AND LEN(@parent_id_number) = 11
                         BEGIN
+
+                        
                             
                             IF @date_of_birth <= GETDATE()
                             BEGIN
@@ -448,17 +517,18 @@ END;
 
 
 
-EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404'
+EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404', 'female'
 EXEC viewTeacher
 
-ALTER PROCEDURE spAddTeacher
+CREATE PROCEDURE spAddTeacher
 @teacher_id_number CHAR(11),
 @first_name VARCHAR(30),
 @last_name VARCHAR(30),
 @phone_number CHAR(10),
 @email VARCHAR(45),
 @town VARCHAR(30),  
-@office_room_number INT
+@office_room_number INT,
+@gender CHAR(1)
 AS
 BEGIN
   IF @first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@first_name) > 0
@@ -471,19 +541,34 @@ BEGIN
         BEGIN
           IF ISNUMERIC(@office_room_number) = 1
           BEGIN
-            BEGIN TRY
-              BEGIN TRANSACTION
-              
-              INSERT INTO teacher(teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number)
-              VALUES(@teacher_id_number , @first_name, @last_name, @phone_number, @email, @town, @office_room_number);
+            IF LOWER(@gender) LIKE 'male' OR LOWER(@gender) LIKE 'female'
+            BEGIN
+              IF @gender LIKE 'male'
+              BEGIN
+                SET @gender = 'M';
+              END
+              ELSE
+              BEGIN
+                SET @gender = 'F';
+              END
 
-              COMMIT TRANSACTION
-              PRINT 'Teacher record added successfully.';
-            END TRY
-            BEGIN CATCH
-              ROLLBACK TRANSACTION
-              PRINT 'There was an error inserting into system';
-            END CATCH
+              BEGIN TRY
+                BEGIN TRANSACTION
+                INSERT INTO teacher(teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number, gender)
+                VALUES(@teacher_id_number , @first_name, @last_name, @phone_number, @email, @town, @office_room_number, @gender);
+
+                COMMIT TRANSACTION
+                PRINT 'Teacher record added successfully.';
+              END TRY
+              BEGIN CATCH
+                ROLLBACK TRANSACTION
+                PRINT 'There was an error inserting into system';
+              END CATCH
+            END
+            ELSE
+            BEGIN
+              PRINT 'Invalid gender. Please enter either male or female.';
+            END
           END
           ELSE
           BEGIN
@@ -509,6 +594,121 @@ BEGIN
   BEGIN
     PRINT 'Error: First name should contain only letters.';
   END
+END;
+
+CREATE PROCEDURE spAddChild
+    @child_first_name VARCHAR(30),
+    @child_last_name VARCHAR(30),
+    @date_of_birth DATE,
+    @emergency_contact_number CHAR(10),
+    @emergency_contact_first_name VARCHAR(30),
+    @emergency_contact_last_name VARCHAR(30),
+    @gender CHAR(1),
+    @parent_id_number CHAR(11)
+AS
+BEGIN
+    -- name should not be empty and should not contain special character
+    IF @child_first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@child_first_name) > 0
+    BEGIN
+    -- name should not be empty and should not contain special character
+        IF @child_last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@child_last_name) > 0
+        BEGIN
+        --name should not be empty and should not contain special character
+            IF @emergency_contact_first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@emergency_contact_first_name) > 0
+            BEGIN
+            -- name should not be empty and should not contain special character
+                IF @emergency_contact_last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@emergency_contact_last_name) > 0
+                BEGIN
+                    -- phone number should not contian special characters na donly 10 characters
+                    IF @emergency_contact_number NOT LIKE '%[^0-9]%' AND LEN(@emergency_contact_number) = 10
+                    BEGIN
+                        --Namibian id numbers are only 11 digits long. if its longer than that or has special characters, throw error
+                        IF @parent_id_number NOT LIKE '%[^0-9]%' AND LEN(@parent_id_number) = 11
+                        BEGIN
+                            IF LOWER(@gender) LIKE 'male' OR LOWER(@gender) LIKE 'female'
+                            BEGIN
+                                IF @gender LIKE 'male'
+                                BEGIN
+                                    SET @gender = 'M';
+                                END
+                                ELSE
+                                BEGIN
+                                    SET @gender = 'F';
+                                END
+
+                                IF @date_of_birth <= GETDATE()
+                                BEGIN
+                                    BEGIN TRY
+                                        BEGIN TRANSACTION;
+
+                                        -- make sure parent exists befor einsert
+                                        IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
+                                        BEGIN
+                                        -- make sure child exists befor einsert
+                                            IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
+                                            BEGIN
+                                                INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, gender, parent_id_number)
+                                                VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @gender, @parent_id_number);
+
+                                                COMMIT TRANSACTION;
+                                                PRINT 'Child record added successfully.';
+                                            END
+                                            ELSE
+                                            BEGIN
+                                                PRINT 'Error: Parent already has a child.';
+                                                ROLLBACK TRANSACTION;
+                                            END
+                                        END
+                                        ELSE
+                                        BEGIN
+                                            PRINT 'Error: Parent does not exist.';
+                                            ROLLBACK TRANSACTION;
+                                        END
+                                    END TRY
+                                    BEGIN CATCH
+                                        ROLLBACK TRANSACTION;
+                                        PRINT 'There was an error inserting into system';
+                                    END CATCH
+                                END
+                                ELSE
+                                BEGIN
+                                    PRINT 'Error: Date of birth cannot be greater than the current date.';
+                                END
+                            END
+                            ELSE
+                            BEGIN
+                                PRINT 'Error: Gender should be either male or female.';
+                            END
+                        END
+                        ELSE
+                        BEGIN
+                            PRINT 'Error: Parent ID number should contain only numbers and be exactly 11 characters long.';
+                        END
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Error: Emergency contact number should contain only numbers and be exactly 10 characters long.';
+                    END
+                END
+                ELSE
+                BEGIN
+                    PRINT 'Error: Emergency contact last name should contain only letters.';
+                END
+            END
+            ELSE
+            BEGIN
+                PRINT 'Error: Emergency contact first name should contain only letters.';
+            END
+        END
+        ELSE
+        BEGIN
+            PRINT 'Error: Child last name should contain only letters.';
+        END
+    END
+    ELSE
+    BEGIN
+        PRINT 'Error: Child first name should contain only letters.';
+    END
 END;
 
 

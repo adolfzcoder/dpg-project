@@ -10,15 +10,16 @@
 
 
 
+
 CREATE PROCEDURE spAddParent
     @parent_id_number CHAR (11),
     @first_name VARCHAR(30),
     @last_name VARCHAR(30),
-   @phone_number CHAR(10),
+    @phone_number CHAR(10),
     @email VARCHAR(45),
     @town VARCHAR (30),
     @gender CHAR(1)
-   AS
+AS
 BEGIN
     IF @first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@first_name) > 0
     BEGIN
@@ -26,8 +27,17 @@ BEGIN
         BEGIN
             IF LEN(@phone_number) = 10
             BEGIN
-                IF LOWER(@gender) IN ('m', 'f')
+                IF LOWER(@gender) LIKE 'male' OR LOWER(@gender) LIKE 'female'
                 BEGIN
+                    IF @gender LIKE 'male'
+                    BEGIN
+                        SET @gender = 'M';
+                    END
+                    ELSE
+                    BEGIN
+                        SET @gender = 'F';
+                    END
+
                     IF @town NOT LIKE '%[^A-Za-z]%' AND LEN(@town) > 0
                     BEGIN
                         BEGIN TRY

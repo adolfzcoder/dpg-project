@@ -17,14 +17,15 @@
 
 
 
-CREATE PROC spAddChild
+
+CREATE PROCEDURE spAddChild
     @child_first_name VARCHAR(30),
     @child_last_name VARCHAR(30),
     @date_of_birth DATE,
     @emergency_contact_number CHAR(10),
     @emergency_contact_first_name VARCHAR(30),
     @emergency_contact_last_name VARCHAR(30),
-    @class_name VARCHAR(30),
+    @gender CHAR(1),
     @parent_id_number CHAR(11)
 AS
 BEGIN
@@ -46,44 +47,59 @@ BEGIN
                         --Namibian id numbers are only 11 digits long. if its longer than that or has special characters, throw error
                         IF @parent_id_number NOT LIKE '%[^0-9]%' AND LEN(@parent_id_number) = 11
                         BEGIN
-                            
-                            IF @date_of_birth <= GETDATE()
+                            IF LOWER(@gender) LIKE 'male' OR LOWER(@gender) LIKE 'female'
                             BEGIN
-                                BEGIN TRY
-                                    BEGIN TRANSACTION;
+                                IF @gender LIKE 'male'
+                                BEGIN
+                                    SET @gender = 'M';
+                                END
+                                ELSE
+                                BEGIN
+                                    SET @gender = 'F';
+                                END
 
-                                    -- make sure parent exists befor einsert
-                                    IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
-                                    BEGIN
-                                    -- make sure child exists befor einsert
-                                        IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
+                                IF @date_of_birth <= GETDATE()
+                                BEGIN
+                                    BEGIN TRY
+                                        BEGIN TRANSACTION;
+
+                                        -- make sure parent exists befor einsert
+                                        IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
                                         BEGIN
-                                            INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_id, parent_id_number)
-                                            VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_id, @parent_id_number);
+                                        -- make sure child exists befor einsert
+                                            IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
+                                            BEGIN
+                                                INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, gender, parent_id_number)
+                                                VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @gender, @parent_id_number);
 
-                                            COMMIT TRANSACTION;
-                                            PRINT 'Child record added successfully.';
+                                                COMMIT TRANSACTION;
+                                                PRINT 'Child record added successfully.';
+                                            END
+                                            ELSE
+                                            BEGIN
+                                                PRINT 'Error: Parent already has a child.';
+                                                ROLLBACK TRANSACTION;
+                                            END
                                         END
                                         ELSE
                                         BEGIN
-                                            PRINT 'Error: Parent already has a child.';
+                                            PRINT 'Error: Parent does not exist.';
                                             ROLLBACK TRANSACTION;
                                         END
-                                    END
-                                    ELSE
-                                    BEGIN
-                                        PRINT 'Error: Parent does not exist.';
+                                    END TRY
+                                    BEGIN CATCH
                                         ROLLBACK TRANSACTION;
-                                    END
-                                END TRY
-                                BEGIN CATCH
-                                    ROLLBACK TRANSACTION;
-                                    PRINT 'There was an error inserting into system';
-                                END CATCH
+                                        PRINT 'There was an error inserting into system';
+                                    END CATCH
+                                END
+                                ELSE
+                                BEGIN
+                                    PRINT 'Error: Date of birth cannot be greater than the current date.';
+                                END
                             END
                             ELSE
                             BEGIN
-                                PRINT 'Error: Date of birth cannot be greater than the current date.';
+                                PRINT 'Error: Gender should be either male or female.';
                             END
                         END
                         ELSE
@@ -116,4 +132,3 @@ BEGIN
         PRINT 'Error: Child first name should contain only letters.';
     END
 END;
-

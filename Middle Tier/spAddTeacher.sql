@@ -14,15 +14,15 @@
 
 EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404'
 EXEC viewTeacher
-
-ALTER PROCEDURE spAddTeacher
+CREATE PROCEDURE spAddTeacher
 @teacher_id_number CHAR(11),
 @first_name VARCHAR(30),
 @last_name VARCHAR(30),
 @phone_number CHAR(10),
 @email VARCHAR(45),
 @town VARCHAR(30),  
-@office_room_number INT
+@office_room_number INT,
+@gender CHAR(1)
 AS
 BEGIN
   IF @first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@first_name) > 0
@@ -35,19 +35,34 @@ BEGIN
         BEGIN
           IF ISNUMERIC(@office_room_number) = 1
           BEGIN
-            BEGIN TRY
-              BEGIN TRANSACTION
-              
-              INSERT INTO teacher(teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number)
-              VALUES(@teacher_id_number , @first_name, @last_name, @phone_number, @email, @town, @office_room_number);
+            IF LOWER(@gender) LIKE 'male' OR LOWER(@gender) LIKE 'female'
+            BEGIN
+              IF @gender LIKE 'male'
+              BEGIN
+                SET @gender = 'M';
+              END
+              ELSE
+              BEGIN
+                SET @gender = 'F';
+              END
 
-              COMMIT TRANSACTION
-              PRINT 'Teacher record added successfully.';
-            END TRY
-            BEGIN CATCH
-              ROLLBACK TRANSACTION
-              PRINT 'There was an error inserting into system';
-            END CATCH
+              BEGIN TRY
+                BEGIN TRANSACTION
+                INSERT INTO teacher(teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number, gender)
+                VALUES(@teacher_id_number , @first_name, @last_name, @phone_number, @email, @town, @office_room_number, @gender);
+
+                COMMIT TRANSACTION
+                PRINT 'Teacher record added successfully.';
+              END TRY
+              BEGIN CATCH
+                ROLLBACK TRANSACTION
+                PRINT 'There was an error inserting into system';
+              END CATCH
+            END
+            ELSE
+            BEGIN
+              PRINT 'Invalid gender. Please enter either male or female.';
+            END
           END
           ELSE
           BEGIN
