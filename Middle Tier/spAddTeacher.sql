@@ -8,7 +8,8 @@ ALTER PROCEDURE spAddTeacher
 @phone_number CHAR(10),
 @email VARCHAR(45),
 @town VARCHAR(30),  
-@office_room_number INT
+@office_room_number INT,
+@gender CHAR(1)
 AS
 BEGIN
   IF @first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@first_name) > 0

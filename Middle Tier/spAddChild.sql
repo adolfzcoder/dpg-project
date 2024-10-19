@@ -12,7 +12,8 @@ CREATE PROC spAddChild
     @emergency_contact_first_name VARCHAR(30),
     @emergency_contact_last_name VARCHAR(30),
     @class_name VARCHAR(30),
-    @parent_id_number CHAR(11)
+    @parent_id_number CHAR(11),
+    @gender CHAR(1)
 AS
 BEGIN
     -- name should not be empty and should not contain special character
@@ -36,7 +37,10 @@ BEGIN
                             
                             IF @date_of_birth <= GETDATE()
                             BEGIN
-                                BEGIN TRY
+
+                                IF LOWER(@gender) LIKE 'female' OR LOWER(@gender) LIKE 'male' 
+                                BEGIN
+                                    BEGIN TRY
                                     BEGIN TRANSACTION;
 
                                     -- make sure parent exists befor einsert
@@ -45,8 +49,8 @@ BEGIN
                                     -- make sure child exists befor einsert
                                         IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
                                         BEGIN
-                                            INSERT INTO child (child_first_name, child_last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_name, parent_id_number)
-                                            VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_name, @parent_id_number);
+                                            INSERT INTO child (child_first_name, child_last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_name, parent_id_number, gender)
+                                            VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_name, @parent_id_number, @gender);
 
                                             COMMIT TRANSACTION;
                                             PRINT 'Child record added successfully.';
@@ -67,6 +71,13 @@ BEGIN
                                     ROLLBACK TRANSACTION;
                                     PRINT 'There was an error inserting into system';
                                 END CATCH
+
+                                END
+                                ELSE
+                                BEGIN
+                                    PRINT 'Error: Gender has to match either Male or Female. Please enter Male or Female';
+                                END
+                                
                             END
                             ELSE
                             BEGIN

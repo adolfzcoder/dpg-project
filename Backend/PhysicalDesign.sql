@@ -11,7 +11,10 @@ CREATE TABLE teacher (
     phone_number CHAR(10) NOT NULL UNIQUE,
     email VARCHAR(45) NOT NULL UNIQUE,
     town VARCHAR(30),  
-    office_room_number INT NOT NULL  -- could be in the same room, but sharing, so can't be unique
+    office_room_number INT NOT NULL, -- could be in the same room, but sharing, so can't be unique
+    gender CHAR(1) NOT NULL
+    
+     
 );
 
 -- DROP TABLE class
@@ -32,7 +35,8 @@ CREATE TABLE parent (
     last_name VARCHAR(30) NOT NULL,
     phone_number CHAR(10) NOT NULL UNIQUE,
     email VARCHAR(45) NOT NULL UNIQUE,
-    town VARCHAR(30)
+    town VARCHAR(30),
+    gender CHAR(1) NOT NULL
 );
 
 CREATE TABLE child (
@@ -43,6 +47,7 @@ CREATE TABLE child (
     emergency_contact_number CHAR(10) NOT NULL UNIQUE,
     emergency_contact_first_name VARCHAR(30),
     emergency_contact_last_name VARCHAR(30),
+    gender CHAR(1) NOT NULL,
     class_id INT,
     parent_id_number CHAR(11) NOT NULL UNIQUE,  -- Enforce one-to-one relationship
     FOREIGN KEY (parent_id_number) REFERENCES parent(parent_id_number),

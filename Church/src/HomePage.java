@@ -86,6 +86,12 @@ public class HomePage extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
+
+
+     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        
+    }
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -110,14 +116,23 @@ public class HomePage extends javax.swing.JFrame {
         }
         //</editor-fold>
 
+
+        
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new HomePage().setVisible(true);
             }
         });
+
+        private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+            // TODO add your handling code here:
+        }
     }
 
+
+
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
