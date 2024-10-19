@@ -49,7 +49,7 @@ BEGIN
                         END TRY
                         BEGIN CATCH
                             ROLLBACK TRANSACTION
-                            PRINT 'There was an error inserting into system';
+                            PRINT 'There was an error inserting into system, please try again';
                         END CATCH
                     END
                     ELSE

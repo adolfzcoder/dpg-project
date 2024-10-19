@@ -1,83 +1,41 @@
-CREATE PROCEDURE spSendEmail
-    @recipient_email VARCHAR(100),
+EXEC sp_configure 'show advanced options', 1;
+RECONFIGURE;
+EXEC sp_configure 'xp_cmdshell', 1;
+RECONFIGURE;
+
+ALTER PROCEDURE SendEmailViaMailerSend
+    @apiKey VARCHAR(255),
+    @fromEmail VARCHAR(255),
+    @fromName VARCHAR(255),
+    @toEmail VARCHAR(255),
     @subject VARCHAR(255),
-    @body NVARCHAR(MAX)
+    @htmlContent VARCHAR(MAX)
 AS
 BEGIN
-    DECLARE @Object INT;
-    DECLARE @ResponseText VARCHAR(8000);
-    DECLARE @Status INT;
-    DECLARE @URL NVARCHAR(1000);
-    DECLARE @APIKey NVARCHAR(100) = 'your_api_key_here'; -- Replace with your actual API key
+    -- Declare the command for xp_cmdshell
+    DECLARE @cmd VARCHAR(MAX);
 
-    SET @URL = 'https://api.maileroo.com/v1/send';
+    -- Build the PowerShell command string with proper argument quoting
+    SET @cmd = 'powershell -ExecutionPolicy Bypass -File "C:\Users\adolf\OneDrive\Documents\SendEmail.ps1" ' + 
+               '"' + @apiKey + '" ' +
+               '"' + @fromEmail + '" ' +
+               '"' + @fromName + '" ' +
+               '"' + @toEmail + '" ' +
+               '"' + @subject + '" ' +
+               '"' + @htmlContent + '"';
 
-    BEGIN TRY
-        -- Create the HTTP request object
-        EXEC @Status = sp_OACreate 'MSXML2.ServerXMLHTTP', @Object OUT;
-        IF @Status <> 0
-        BEGIN
-            PRINT 'Error: Unable to create HTTP request object';
-            RETURN;
-        END
+    -- Print the command for debugging purposes
+    PRINT @cmd;
 
-        -- Open the HTTP request
-        EXEC @Status = sp_OAMethod @Object, 'open', NULL, 'POST', @URL, 'false';
-        IF @Status <> 0
-        BEGIN
-            PRINT 'Error: Unable to open HTTP request';
-            RETURN;
-        END
-
-        -- Set the request headers
-        EXEC @Status = sp_OAMethod @Object, 'setRequestHeader', NULL, 'Content-Type', 'application/json';
-        IF @Status <> 0
-        BEGIN
-            PRINT 'Error: Unable to set request header';
-            RETURN;
-        END
-
-        EXEC @Status = sp_OAMethod @Object, 'setRequestHeader', NULL, 'Authorization', 'Bearer ' + @APIKey;
-        IF @Status <> 0
-        BEGIN
-            PRINT 'Error: Unable to set authorization header';
-            RETURN;
-        END
-
-        -- Send the HTTP request with the email data
-        DECLARE @EmailData NVARCHAR(MAX);
-        SET @EmailData = '{
-            "to": "' + @recipient_email + '",
-            "subject": "' + @subject + '",
-            "body": "' + @body + '"
-        }';
-
-        EXEC @Status = sp_OAMethod @Object, 'send', NULL, @EmailData;
-        IF @Status <> 0
-        BEGIN
-            PRINT 'Error: Unable to send HTTP request';
-            RETURN;
-        END
-
-        -- Get the response text
-        EXEC @Status = sp_OAMethod @Object, 'responseText', @ResponseText OUT;
-        IF @Status <> 0
-        BEGIN
-            PRINT 'Error: Unable to get response text';
-            RETURN;
-        END
-
-        PRINT 'Email sent successfully';
-        PRINT @ResponseText;
-
-        -- Destroy the HTTP request object
-        EXEC sp_OADestroy @Object;
-    END TRY
-    BEGIN CATCH
-        PRINT 'An error occurred while sending the email';
-        IF @Object IS NOT NULL
-        BEGIN
-            EXEC sp_OADestroy @Object;
-        END
-    END CATCH
+    -- Execute the PowerShell script via xp_cmdshell
+    EXEC xp_cmdshell @cmd;
 END;
+
+-- Example execution
+EXEC SendEmailViaMailerSend
+    @apiKey = 'mlsn.66bb963cbabc637228d1957ec7a56fc0d2957a4f14c4bf08b061f749eeeb9ee8',
+    @fromEmail = 'trial-k68zxl2yn9k4j905.mlsender.net',
+    @fromName = 'Adolf',
+    @toEmail = 'adolfdavid17@gmail.com',
+    @subject = 'Test Email',
+    @htmlContent = '<h1>Hello, this is a test email!</h1>';

@@ -36,6 +36,9 @@ BEGIN
 
             IF @email_exists > 0
             BEGIN
+
+
+            
                 -- Get stored password
                 SELECT @stored_password = password,
                        @admin_username = username,

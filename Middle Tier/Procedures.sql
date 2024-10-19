@@ -114,7 +114,7 @@ BEGIN
                 END TRY
                 BEGIN CATCH
                     ROLLBACK TRANSACTION;
-                    PRINT 'There was an error inserting into system';
+                    PRINT 'There was an error inserting into system, please try again';
                 END CATCH
             END
             ELSE
@@ -171,7 +171,7 @@ BEGIN
                         END TRY
                         BEGIN CATCH
                             ROLLBACK TRANSACTION
-                            PRINT 'There was an error inserting into system';
+                            PRINT 'There was an error inserting into system, please try again';
                         END CATCH
                     END
                     ELSE
@@ -508,7 +508,7 @@ BEGIN
                                         END TRY
                                         BEGIN CATCH
                                             ROLLBACK TRANSACTION;
-                                            PRINT 'There was an error inserting into system';
+                                            PRINT 'There was an error inserting into system, please try again';
                                         END CATCH
                                     END
                                     ELSE
@@ -572,6 +572,22 @@ END;
 EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404', 'female'
 EXEC viewTeacher
 
+-- CREATE TABLE teacher (
+--     teacher_id_number CHAR(11) PRIMARY KEY,
+--     first_name VARCHAR(30) NOT NULL,
+--     last_name VARCHAR(30) NOT NULL,
+--     phone_number CHAR(10) NOT NULL UNIQUE,
+--     email VARCHAR(45) NOT NULL UNIQUE,
+--     town VARCHAR(30),  
+--     office_room_number INT NOT NULL, -- could be in the same room, but sharing, so can't be unique
+--     gender CHAR(1) NOT NULL
+    
+     
+-- );
+
+
+EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404'
+EXEC viewTeacher
 CREATE PROCEDURE spAddTeacher
 @teacher_id_number CHAR(11),
 @first_name VARCHAR(30),
@@ -614,7 +630,22 @@ BEGIN
               END TRY
               BEGIN CATCH
                 ROLLBACK TRANSACTION
-                PRINT 'There was an error inserting into system';
+                PRINT 'There was an error inserting into system, please try again';
+
+
+
+                 EXEC spHandleError;
+
+                DECLARE @ErrorNumber INT = ERROR_NUMBER();
+                IF @ErrorNumber = 2627 -- Unique constraint violation error code
+                BEGIN
+                  PRINT 'Error: Duplicate value. Either phone number or email already exists.';
+                END
+                ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+                BEGIN
+                  PRINT 'Error: Foreign key violation.';
+                END
+
               END CATCH
             END
             ELSE
@@ -648,6 +679,36 @@ BEGIN
   END
 END;
 
+
+
+
+
+
+
+
+
+
+
+-- CREATE TABLE child (
+--     child_id INT PRIMARY KEY IDENTITY,
+--     first_name VARCHAR(30) NOT NULL,
+--     last_name VARCHAR(30) NOT NULL,
+--     date_of_birth DATE,
+--     emergency_contact_number CHAR(10) NOT NULL UNIQUE,
+--     emergency_contact_firsst_name VARCHAR(30),
+--     emergency_contact_last_name VARCHAR(30),
+--     gender CHAR(1) NOT NULL,
+--     class_id INT,
+--     parent_id_number CHAR(11) NOT NULL UNIQUE,  -- Enforce one-to-one relationship
+--     FOREIGN KEY (parent_id_number) REFERENCES parent(parent_id_number),
+--     FOREIGN KEY (class_id) REFERENCES class(class_id)
+-- );
+
+
+
+
+
+
 CREATE PROCEDURE spAddChild
     @child_first_name VARCHAR(30),
     @child_last_name VARCHAR(30),
@@ -662,19 +723,19 @@ BEGIN
     -- name should not be empty and should not contain special character
     IF @child_first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@child_first_name) > 0
     BEGIN
-    -- name should not be empty and should not contain special character
+        -- name should not be empty and should not contain special character
         IF @child_last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@child_last_name) > 0
         BEGIN
-        --name should not be empty and should not contain special character
+            -- name should not be empty and should not contain special character
             IF @emergency_contact_first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@emergency_contact_first_name) > 0
             BEGIN
-            -- name should not be empty and should not contain special character
+                -- name should not be empty and should not contain special character
                 IF @emergency_contact_last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@emergency_contact_last_name) > 0
                 BEGIN
-                    -- phone number should not contian special characters na donly 10 characters
+                    -- phone number should not contain special characters and only 10 characters
                     IF @emergency_contact_number NOT LIKE '%[^0-9]%' AND LEN(@emergency_contact_number) = 10
                     BEGIN
-                        --Namibian id numbers are only 11 digits long. if its longer than that or has special characters, throw error
+                        -- Namibian id numbers are only 11 digits long. if it's longer than that or has special characters, throw error
                         IF @parent_id_number NOT LIKE '%[^0-9]%' AND LEN(@parent_id_number) = 11
                         BEGIN
                             IF LOWER(@gender) LIKE 'm' OR LOWER(@gender) LIKE 'f'
@@ -687,39 +748,74 @@ BEGIN
                                 BEGIN
                                     SET @gender = 'F';
                                 END
+
                                 IF @date_of_birth <= GETDATE()
                                 BEGIN
-                                    BEGIN TRY
-                                        BEGIN TRANSACTION;
+                                    -- Calculate the child's age
+                                    DECLARE @child_age INT;
+                                    SET @child_age = DATEDIFF(YEAR, @date_of_birth, GETDATE());
 
-                                        -- make sure parent exists befor einsert
-                                        IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
-                                        BEGIN
-                                        -- make sure child exists befor einsert
-                                            IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
+                                    -- Find the appropriate class for the child's age
+                                    DECLARE @class_id INT;
+                                    SELECT TOP 1 @class_id = class_id
+                                    FROM class
+                                    WHERE @child_age BETWEEN age_range_start AND age_range_end;
+
+                                    IF @class_id IS NOT NULL
+                                    BEGIN
+                                        BEGIN TRY
+                                            BEGIN TRANSACTION;
+
+                                            -- make sure parent exists before insert
+                                            IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
                                             BEGIN
-                                                INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, gender, parent_id_number)
-                                                VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @gender, @parent_id_number);
+                                                -- make sure child does not already exist before insert
+                                                IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
+                                                BEGIN
+                                                    INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, gender, class_id, parent_id_number)
+                                                    VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @gender, @class_id, @parent_id_number);
 
-                                                COMMIT TRANSACTION;
-                                                PRINT 'Child record added successfully.';
+                                                    COMMIT TRANSACTION;
+                                                    PRINT 'Child record added successfully.';
+                                                END
+                                                ELSE
+                                                BEGIN
+                                                    PRINT 'Error: Parent already has a child.';
+                                                    ROLLBACK TRANSACTION;
+                                                END
                                             END
                                             ELSE
                                             BEGIN
-                                                PRINT 'Error: Parent already has a child.';
+                                                PRINT 'Error: Parent does not exist.';
                                                 ROLLBACK TRANSACTION;
                                             END
-                                        END
-                                        ELSE
-                                        BEGIN
-                                            PRINT 'Error: Parent does not exist.';
+                                        END TRY
+                                        BEGIN CATCH
                                             ROLLBACK TRANSACTION;
+                                            PRINT 'There was an error inserting into system, please try again';
+
+
+                                            
+                                        EXEC spHandleError;
+
+                                        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+                                        IF @ErrorNumber = 2627 -- Unique constraint violation error code
+                                        BEGIN
+                                        PRINT 'Error: Duplicate value. Either phone number or email already exists.';
                                         END
-                                    END TRY
-                                    BEGIN CATCH
-                                        ROLLBACK TRANSACTION;
-                                        PRINT 'There was an error inserting into system';
-                                    END CATCH
+                                        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+                                        BEGIN
+                                        PRINT 'Error: Foreign key violation.';
+                                        END
+
+
+
+                                        END CATCH
+                                    END
+                                    ELSE
+                                    BEGIN
+                                        PRINT 'Error: No appropriate class found for the child s age.';
+                                    END
                                 END
                                 ELSE
                                 BEGIN
@@ -762,7 +858,28 @@ BEGIN
     END
 END;
 
+-- Insert sample data into the class table
+INSERT INTO class (class_name, start_time, venue, has_projector, end_time, teacher_id_number, age_range_start, age_range_end)
+VALUES 
+('Nursery', '08:00', 'Room 101', 0, '12:00', 'TCH001', 3, 4),
+('Pre-K', '08:00', 'Room 102', 1, '12:00', 'TCH002', 4, 5),
+('Kindergarten', '08:00', 'Room 103', 1, '12:00', 'TCH003', 5, 6);
 
+
+
+
+
+
+
+-- CREATE TABLE parent (
+--     parent_id_number CHAR(11) PRIMARY KEY,
+--     first_name VARCHAR(30) NOT NULL,
+--     last_name VARCHAR(30) NOT NULL,
+--     phone_number CHAR(10) NOT NULL UNIQUE,
+--     email VARCHAR(45) NOT NULL UNIQUE,
+--     town VARCHAR(30),
+--     gender CHAR(1) NOT NULL
+-- );
 
 
 
@@ -771,11 +888,11 @@ CREATE PROCEDURE spAddParent
     @parent_id_number CHAR (11),
     @first_name VARCHAR(30),
     @last_name VARCHAR(30),
-   @phone_number CHAR(10),
+    @phone_number CHAR(10),
     @email VARCHAR(45),
     @town VARCHAR (30),
     @gender CHAR(1)
-   AS
+AS
 BEGIN
     IF @first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@first_name) > 0
     BEGIN
@@ -783,9 +900,17 @@ BEGIN
         BEGIN
             IF LEN(@phone_number) = 10
             BEGIN
-                IF LOWER(@gender) LIKE 'female' OR LOWER(@gender) LIKE  'male'
-
+                IF LOWER(@gender) LIKE 'm' OR LOWER(@gender) LIKE 'f'
                 BEGIN
+                    IF @gender LIKE 'm'
+                    BEGIN
+                        SET @gender = 'M';
+                    END
+                    ELSE
+                    BEGIN
+                        SET @gender = 'F';
+                    END
+
                     IF @town NOT LIKE '%[^A-Za-z]%' AND LEN(@town) > 0
                     BEGIN
                         BEGIN TRY
@@ -797,7 +922,7 @@ BEGIN
                         END TRY
                         BEGIN CATCH
                             ROLLBACK TRANSACTION
-                            PRINT 'There was an error inserting into system';
+                            PRINT 'There was an error inserting into system, please try again';
                         END CATCH
                     END
                     ELSE
@@ -824,4 +949,29 @@ BEGIN
     BEGIN
         PRINT 'Error: First name should contain only letters.';
     END
+END;
+
+
+
+
+CREATE PROCEDURE spHandleError
+AS
+BEGIN
+    DECLARE @ErrorNumber INT,
+            @ErrorSeverity INT,
+            @ErrorProcedure NVARCHAR(128),
+            @ErrorMessage NVARCHAR(4000);
+
+    -- Retrieve error details
+    SET @ErrorNumber = ERROR_NUMBER();
+    SET @ErrorSeverity = ERROR_SEVERITY();
+    SET @ErrorProcedure = ERROR_PROCEDURE();
+    SET @ErrorMessage = ERROR_MESSAGE();
+
+    PRINT 'Error Number: ' + CAST(@ErrorNumber AS VARCHAR(10));
+    PRINT 'Error Severity: ' + CAST(@ErrorSeverity AS VARCHAR(10));
+    PRINT 'Error Procedure: ' + ISNULL(@ErrorProcedure, 'N/A');
+    PRINT 'Error Message: ' + @ErrorMessage;
+
+
 END;

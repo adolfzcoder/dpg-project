@@ -51,7 +51,7 @@ CREATE TABLE child (
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
     date_of_birth DATE,
-    emergency_contact_number CHAR(10) NOT NULL UNIQUE,
+    emergency_contact_number CHAR(10) NOT NULL,
     emergency_contact_first_name VARCHAR(30),
     emergency_contact_last_name VARCHAR(30),
     gender CHAR(1) NOT NULL,
