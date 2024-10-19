@@ -3,6 +3,15 @@
 --EXEC viewAdmin
 
 -- DELETE FROM adminTable
+-- CREATE TABLE adminTable (
+--     admin_id INT PRIMARY KEY IDENTITY,
+--     username VARCHAR(30) NOT NULL UNIQUE,
+--     password VARCHAR(255) NOT NULL,
+--     email VARCHAR(45) NOT NULL UNIQUE,
+--     role VARCHAR(20) DEFAULT 'admin',  -- 'admin' or 'superadmin', superadmins can add other admins
+--     phone_number CHAR(10) UNIQUE,
+--     created_at DATETIME DEFAULT GETDATE()
+-- );
 
 
 CREATE PROCEDURE spAddAdmin

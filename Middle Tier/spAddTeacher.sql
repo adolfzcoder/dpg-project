@@ -1,3 +1,17 @@
+-- CREATE TABLE teacher (
+--     teacher_id_number CHAR(11) PRIMARY KEY,
+--     first_name VARCHAR(30) NOT NULL,
+--     last_name VARCHAR(30) NOT NULL,
+--     phone_number CHAR(10) NOT NULL UNIQUE,
+--     email VARCHAR(45) NOT NULL UNIQUE,
+--     town VARCHAR(30),  
+--     office_room_number INT NOT NULL, -- could be in the same room, but sharing, so can't be unique
+--     gender CHAR(1) NOT NULL
+    
+     
+-- );
+
+
 EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404'
 EXEC viewTeacher
 

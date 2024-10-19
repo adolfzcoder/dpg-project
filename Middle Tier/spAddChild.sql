@@ -1,9 +1,22 @@
--- How to use this procedure
+-- CREATE TABLE child (
+--     child_id INT PRIMARY KEY IDENTITY,
+--     first_name VARCHAR(30) NOT NULL,
+--     last_name VARCHAR(30) NOT NULL,
+--     date_of_birth DATE,
+--     emergency_contact_number CHAR(10) NOT NULL UNIQUE,
+--     emergency_contact_firsst_name VARCHAR(30),
+--     emergency_contact_last_name VARCHAR(30),
+--     gender CHAR(1) NOT NULL,
+--     class_id INT,
+--     parent_id_number CHAR(11) NOT NULL UNIQUE,  -- Enforce one-to-one relationship
+--     FOREIGN KEY (parent_id_number) REFERENCES parent(parent_id_number),
+--     FOREIGN KEY (class_id) REFERENCES class(class_id)
+-- );
 
--- EXEC spAddChild 'John', 'Kavango', '2010-05-15', '0811234567', 'Peter', 'Kavango', 'Math 101', '82010154321'
 
--- EXEC viewParent
--- EXEC viewChild
+
+
+
 CREATE PROC spAddChild
     @child_first_name VARCHAR(30),
     @child_last_name VARCHAR(30),
@@ -45,8 +58,8 @@ BEGIN
                                     -- make sure child exists befor einsert
                                         IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
                                         BEGIN
-                                            INSERT INTO child (child_first_name, child_last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_name, parent_id_number)
-                                            VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_name, @parent_id_number);
+                                            INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_id, parent_id_number)
+                                            VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_id, @parent_id_number);
 
                                             COMMIT TRANSACTION;
                                             PRINT 'Child record added successfully.';
@@ -103,3 +116,4 @@ BEGIN
         PRINT 'Error: Child first name should contain only letters.';
     END
 END;
+

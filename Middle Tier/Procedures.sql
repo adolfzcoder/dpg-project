@@ -346,7 +346,7 @@ CREATE PROC spAddChild
     @emergency_contact_number CHAR(10),
     @emergency_contact_first_name VARCHAR(30),
     @emergency_contact_last_name VARCHAR(30),
-    @class_name VARCHAR(30),
+    @class_id VARCHAR(30),
     @parent_id_number CHAR(11)
 AS
 BEGIN
@@ -380,8 +380,8 @@ BEGIN
                                     -- make sure child exists befor einsert
                                         IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
                                         BEGIN
-                                            INSERT INTO child (child_first_name, child_last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_name, parent_id_number)
-                                            VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_name, @parent_id_number);
+                                            INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_id, parent_id_number)
+                                            VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_id, @parent_id_number);
 
                                             COMMIT TRANSACTION;
                                             PRINT 'Child record added successfully.';
@@ -410,7 +410,7 @@ BEGIN
                         END
                         ELSE
                         BEGIN
-                            PRINT 'Error: Parent ID number should contain only numbers and be exactly 11 characters long.';
+                            PRINT 'Error: Parent id number should contain only numbers and be exactly 11 characters long.';
                         END
                     END
                     ELSE
@@ -438,6 +438,9 @@ BEGIN
         PRINT 'Error: Child first name should contain only letters.';
     END
 END;
+
+
+
 
 
 
@@ -507,4 +510,68 @@ BEGIN
   BEGIN
     PRINT 'Error: First name should contain only letters.';
   END
+END;
+
+
+
+
+
+
+CREATE PROCEDURE spAddParent
+    @parent_id_number CHAR (11),
+    @first_name VARCHAR(30),
+    @last_name VARCHAR(30),
+   @phone_number CHAR(10),
+    @email VARCHAR(45),
+    @town VARCHAR (30),
+    @gender CHAR(1)
+   AS
+BEGIN
+    IF @first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@first_name) > 0
+    BEGIN
+        IF @last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@last_name) > 0
+        BEGIN
+            IF LEN(@phone_number) = 10
+            BEGIN
+                IF LOWER(@gender) LIKE 'female' OR LOWER(@gender) LIKE  'male'
+
+                BEGIN
+                    IF @town NOT LIKE '%[^A-Za-z]%' AND LEN(@town) > 0
+                    BEGIN
+                        BEGIN TRY
+                            BEGIN TRANSACTION
+                                INSERT INTO parent(parent_id_number, first_name, last_name, phone_number, email, town, gender)
+                                VALUES(@parent_id_number, @first_name, @last_name, @phone_number, @email, @town, @gender)
+                            COMMIT TRANSACTION
+                            PRINT 'Parent record added successfully'
+                        END TRY
+                        BEGIN CATCH
+                            ROLLBACK TRANSACTION
+                            PRINT 'There was an error inserting into system';
+                        END CATCH
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Error: Town should only have letters, not special characters.';
+                    END
+                END
+                ELSE
+                BEGIN
+                    PRINT 'Please enter a valid gender, either male or female';
+                END
+            END
+            ELSE
+            BEGIN
+                PRINT 'Error: Phone number should be exactly 10 characters long.';
+            END
+        END
+        ELSE
+        BEGIN
+            PRINT 'Error: Last name should contain only letters.';
+        END
+    END
+    ELSE
+    BEGIN
+        PRINT 'Error: First name should contain only letters.';
+    END
 END;
