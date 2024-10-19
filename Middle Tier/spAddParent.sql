@@ -27,9 +27,9 @@ BEGIN
         BEGIN
             IF LEN(@phone_number) = 10
             BEGIN
-                IF LOWER(@gender) LIKE 'male' OR LOWER(@gender) LIKE 'female'
+                IF LOWER(@gender) LIKE 'm' OR LOWER(@gender) LIKE 'f'
                 BEGIN
-                    IF @gender LIKE 'male'
+                    IF @gender LIKE 'm'
                     BEGIN
                         SET @gender = 'M';
                     END

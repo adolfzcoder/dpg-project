@@ -32,24 +32,24 @@ BEGIN
     -- name should not be empty and should not contain special character
     IF @child_first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@child_first_name) > 0
     BEGIN
-    -- name should not be empty and should not contain special character
+        -- name should not be empty and should not contain special character
         IF @child_last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@child_last_name) > 0
         BEGIN
-        --name should not be empty and should not contain special character
+            -- name should not be empty and should not contain special character
             IF @emergency_contact_first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@emergency_contact_first_name) > 0
             BEGIN
-            -- name should not be empty and should not contain special character
+                -- name should not be empty and should not contain special character
                 IF @emergency_contact_last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@emergency_contact_last_name) > 0
                 BEGIN
-                    -- phone number should not contian special characters na donly 10 characters
+                    -- phone number should not contain special characters and only 10 characters
                     IF @emergency_contact_number NOT LIKE '%[^0-9]%' AND LEN(@emergency_contact_number) = 10
                     BEGIN
-                        --Namibian id numbers are only 11 digits long. if its longer than that or has special characters, throw error
+                        -- Namibian id numbers are only 11 digits long. if it's longer than that or has special characters, throw error
                         IF @parent_id_number NOT LIKE '%[^0-9]%' AND LEN(@parent_id_number) = 11
                         BEGIN
-                            IF LOWER(@gender) LIKE 'male' OR LOWER(@gender) LIKE 'female'
+                            IF LOWER(@gender) LIKE 'm' OR LOWER(@gender) LIKE 'f'
                             BEGIN
-                                IF @gender LIKE 'male'
+                                IF @gender LIKE 'm'
                                 BEGIN
                                     SET @gender = 'M';
                                 END
@@ -60,37 +60,54 @@ BEGIN
 
                                 IF @date_of_birth <= GETDATE()
                                 BEGIN
-                                    BEGIN TRY
-                                        BEGIN TRANSACTION;
+                                    -- Calculate the child's age
+                                    DECLARE @child_age INT;
+                                    SET @child_age = DATEDIFF(YEAR, @date_of_birth, GETDATE());
 
-                                        -- make sure parent exists befor einsert
-                                        IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
-                                        BEGIN
-                                        -- make sure child exists befor einsert
-                                            IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
+                                    -- Find the appropriate class for the child's age
+                                    DECLARE @class_id INT;
+                                    SELECT TOP 1 @class_id = class_id
+                                    FROM class
+                                    WHERE @child_age BETWEEN age_range_start AND age_range_end;
+
+                                    IF @class_id IS NOT NULL
+                                    BEGIN
+                                        BEGIN TRY
+                                            BEGIN TRANSACTION;
+
+                                            -- make sure parent exists before insert
+                                            IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
                                             BEGIN
-                                                INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, gender, parent_id_number)
-                                                VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @gender, @parent_id_number);
+                                                -- make sure child does not already exist before insert
+                                                IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
+                                                BEGIN
+                                                    INSERT INTO child (first_name, last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, gender, class_id, parent_id_number)
+                                                    VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @gender, @class_id, @parent_id_number);
 
-                                                COMMIT TRANSACTION;
-                                                PRINT 'Child record added successfully.';
+                                                    COMMIT TRANSACTION;
+                                                    PRINT 'Child record added successfully.';
+                                                END
+                                                ELSE
+                                                BEGIN
+                                                    PRINT 'Error: Parent already has a child.';
+                                                    ROLLBACK TRANSACTION;
+                                                END
                                             END
                                             ELSE
                                             BEGIN
-                                                PRINT 'Error: Parent already has a child.';
+                                                PRINT 'Error: Parent does not exist.';
                                                 ROLLBACK TRANSACTION;
                                             END
-                                        END
-                                        ELSE
-                                        BEGIN
-                                            PRINT 'Error: Parent does not exist.';
+                                        END TRY
+                                        BEGIN CATCH
                                             ROLLBACK TRANSACTION;
-                                        END
-                                    END TRY
-                                    BEGIN CATCH
-                                        ROLLBACK TRANSACTION;
-                                        PRINT 'There was an error inserting into system';
-                                    END CATCH
+                                            PRINT 'There was an error inserting into system';
+                                        END CATCH
+                                    END
+                                    ELSE
+                                    BEGIN
+                                        PRINT 'Error: No appropriate class found for the child s age.';
+                                    END
                                 END
                                 ELSE
                                 BEGIN
@@ -132,3 +149,10 @@ BEGIN
         PRINT 'Error: Child first name should contain only letters.';
     END
 END;
+
+-- Insert sample data into the class table
+INSERT INTO class (class_name, start_time, venue, has_projector, end_time, teacher_id_number, age_range_start, age_range_end)
+VALUES 
+('Nursery', '08:00', 'Room 101', 0, '12:00', 'TCH001', 3, 4),
+('Pre-K', '08:00', 'Room 102', 1, '12:00', 'TCH002', 4, 5),
+('Kindergarten', '08:00', 'Room 103', 1, '12:00', 'TCH003', 5, 6);
