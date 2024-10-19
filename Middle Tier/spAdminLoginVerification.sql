@@ -12,7 +12,8 @@ BEGIN
     DECLARE @admin_id INT;
 
     BEGIN TRY
-        -- Email should be in valid email format
+                    --email should be in valid email format
+
         IF @email LIKE '%_@__%.__%'
         BEGIN
             -- Check if the email already exists
@@ -36,28 +37,10 @@ BEGIN
                 BEGIN
                     PRINT 'Successfully logged in';
                     -- Set session context values
-                    DECLARE @sessionStartTime DATETIME;
-                    DECLARE @timeoutInMinutes INT = 30;
-
-                    -- Get the session start time from the session context
-                    SET @sessionStartTime = CONVERT(DATETIME, SESSION_CONTEXT(N'session_start_time'));
-
-                    -- Compare the current time with the session start time
-                    IF DATEDIFF(MINUTE, @sessionStartTime, GETDATE()) > @timeoutInMinutes
-                    BEGIN
-                        -- Session has timed out, take appropriate action (e.g., clear session context)
-                        EXEC sp_set_session_context @key = N'admin_username', @value = NULL;
-                        EXEC sp_set_session_context @key = N'admin_role', @value = NULL;
-                        EXEC sp_set_session_context @key = N'admin_email', @value = NULL;
-                        EXEC sp_set_session_context @key = N'admin_id', @value = NULL;
-                        EXEC sp_set_session_context @key = N'session_start_time', @value = NULL;
-
-                        PRINT 'Session has timed out.';
-                    END
-                    ELSE
-                    BEGIN
-                        PRINT 'Session is still active.';
-                    END
+                    EXEC sp_set_session_context @key = N'admin_username', @value = @admin_username;
+                    EXEC sp_set_session_context @key = N'admin_role', @value = @admin_role;
+                    EXEC sp_set_session_context @key = N'admin_email', @value = @admin_email;
+                    EXEC sp_set_session_context @key = N'admin_id', @value = @admin_id;
 
                     -- SELECT -- outputting for testing the logged in admin
                     -- SESSION_CONTEXT(N'admin_username') AS AdminUsername,

@@ -153,7 +153,8 @@ BEGIN
     DECLARE @admin_id INT;
 
     BEGIN TRY
-        -- Email should be in valid email format
+                    --email should be in valid email format
+
         IF @email LIKE '%_@__%.__%'
         BEGIN
             -- Check if the email already exists
@@ -177,28 +178,10 @@ BEGIN
                 BEGIN
                     PRINT 'Successfully logged in';
                     -- Set session context values
-                    DECLARE @sessionStartTime DATETIME;
-                    DECLARE @timeoutInMinutes INT = 30;
-
-                    -- Get the session start time from the session context
-                    SET @sessionStartTime = CONVERT(DATETIME, SESSION_CONTEXT(N'session_start_time'));
-
-                    -- Compare the current time with the session start time
-                    IF DATEDIFF(MINUTE, @sessionStartTime, GETDATE()) > @timeoutInMinutes
-                    BEGIN
-                        -- Session has timed out, take appropriate action (e.g., clear session context)
-                        EXEC sp_set_session_context @key = N'admin_username', @value = NULL;
-                        EXEC sp_set_session_context @key = N'admin_role', @value = NULL;
-                        EXEC sp_set_session_context @key = N'admin_email', @value = NULL;
-                        EXEC sp_set_session_context @key = N'admin_id', @value = NULL;
-                        EXEC sp_set_session_context @key = N'session_start_time', @value = NULL;
-
-                        PRINT 'Session has timed out.';
-                    END
-                    ELSE
-                    BEGIN
-                        PRINT 'Session is still active.';
-                    END
+                    EXEC sp_set_session_context @key = N'admin_username', @value = @admin_username;
+                    EXEC sp_set_session_context @key = N'admin_role', @value = @admin_role;
+                    EXEC sp_set_session_context @key = N'admin_email', @value = @admin_email;
+                    EXEC sp_set_session_context @key = N'admin_id', @value = @admin_id;
 
                     -- SELECT -- outputting for testing the logged in admin
                     -- SESSION_CONTEXT(N'admin_username') AS AdminUsername,
@@ -226,17 +209,18 @@ BEGIN
 END;
 
 
+
 EXEC viewChild;
 EXEC viewClass
 EXEC viewTeacher
 DELETE FROM teacher
-INSERT INTO teacher (teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number, gender)
+INSERT INTO teacher (teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number)
 VALUES 
-('98031712345', 'Petrus', 'Nangolo', '0812345678', 'petrusnangolo@example.com', 'Windhoek', 101, 'm'),
-('85020256789', 'Maria', 'Kandjii', '0818765432', 'mariakandjii@example.com', 'Swakopmund', 102, 'f'),
-('90030391012', 'Johannes', 'Shilongo', '0811122334', 'johannesshilongo@example.com', 'Walvis Bay', 103, 'm'),
-('87040411223', 'Elina', 'Amutenya', '0812233445', 'elinaamutenya@example.com', 'Oshakati', 104, 'f'),
-('95050533444', 'Samuel', 'Kaunda', '0813344556', 'samuelkaunda@example.com', 'Rundu', 105), 'm';
+('98031712345', 'Petrus', 'Nangolo', '0812345678', 'petrusnangolo@example.com', 'Windhoek', 101),
+('85020256789', 'Maria', 'Kandjii', '0818765432', 'mariakandjii@example.com', 'Swakopmund', 102),
+('90030391012', 'Johannes', 'Shilongo', '0811122334', 'johannesshilongo@example.com', 'Walvis Bay', 103),
+('87040411223', 'Elina', 'Amutenya', '0812233445', 'elinaamutenya@example.com', 'Oshakati', 104),
+('95050533444', 'Samuel', 'Kaunda', '0813344556', 'samuelkaunda@example.com', 'Rundu', 105);
 
 
 INSERT INTO class (class_name, start_time, venue, has_projector, end_time, teacher_id_number)
@@ -247,12 +231,12 @@ VALUES
 ('Art 101', '13:15:00', 'Room 204', 0, '14:45:00', '87040411223'),
 ('Music 101', '15:00:00', 'Room 205', 1, '16:30:00', '95050533444');
 
-INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town, gender)
+INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
 VALUES 
-('99051790321', 'Adolf', 'Chikombo', '0816166785', 'adavid@muhoko.org', 'Otjiarare', 'm')
+('99051790321', 'Adolf', 'Chikombo', '0816166785', 'adavid@muhoko.org', 'Otjiarare')
 
 ,
-('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek', 'f');
+('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek');
 
 INSERT INTO child (child_id, first_name, last_name, date_of_birth, parent_id_number)
 VALUES 
@@ -356,114 +340,103 @@ EXEC viewChild
 -- EXEC viewParent
 -- EXEC viewChild
 CREATE PROC spAddChild
-@child_first_name VARCHAR(30),
-@child_last_name VARCHAR(30),
-@date_of_birth DATE,
-@emergency_contact_number CHAR(10),
-@emergency_contact_first_name VARCHAR(30),
-@emergency_contact_last_name VARCHAR(30),
-@class_name VARCHAR(30),
-@parent_id_number CHAR(11),
-@gender CHAR(1)
+    @child_first_name VARCHAR(30),
+    @child_last_name VARCHAR(30),
+    @date_of_birth DATE,
+    @emergency_contact_number CHAR(10),
+    @emergency_contact_first_name VARCHAR(30),
+    @emergency_contact_last_name VARCHAR(30),
+    @class_name VARCHAR(30),
+    @parent_id_number CHAR(11)
 AS
 BEGIN
--- name should not be empty and should not contain special character
-IF @child_first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@child_first_name) > 0
-BEGIN
--- name should not be empty and should not contain special character
-    IF @child_last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@child_last_name) > 0
+    -- name should not be empty and should not contain special character
+    IF @child_first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@child_first_name) > 0
     BEGIN
-    --name should not be empty and should not contain special character
-        IF @emergency_contact_first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@emergency_contact_first_name) > 0
+    -- name should not be empty and should not contain special character
+        IF @child_last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@child_last_name) > 0
         BEGIN
-        -- name should not be empty and should not contain special character
-            IF @emergency_contact_last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@emergency_contact_last_name) > 0
+        --name should not be empty and should not contain special character
+            IF @emergency_contact_first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@emergency_contact_first_name) > 0
             BEGIN
-                -- phone number should not contian special characters na donly 10 characters
-                IF @emergency_contact_number NOT LIKE '%[^0-9]%' AND LEN(@emergency_contact_number) = 10
+            -- name should not be empty and should not contain special character
+                IF @emergency_contact_last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@emergency_contact_last_name) > 0
                 BEGIN
-                    --Namibian id numbers are only 11 digits long. if its longer than that or has special characters, throw error
-                    IF @parent_id_number NOT LIKE '%[^0-9]%' AND LEN(@parent_id_number) = 11
+                    -- phone number should not contian special characters na donly 10 characters
+                    IF @emergency_contact_number NOT LIKE '%[^0-9]%' AND LEN(@emergency_contact_number) = 10
                     BEGIN
-                        
-                        IF @date_of_birth <= GETDATE()
+                        --Namibian id numbers are only 11 digits long. if its longer than that or has special characters, throw error
+                        IF @parent_id_number NOT LIKE '%[^0-9]%' AND LEN(@parent_id_number) = 11
                         BEGIN
-
-                            IF LOWER(@gender) LIKE 'female' OR LOWER(@gender) LIKE 'male' 
+                            
+                            IF @date_of_birth <= GETDATE()
                             BEGIN
                                 BEGIN TRY
-                                BEGIN TRANSACTION;
+                                    BEGIN TRANSACTION;
 
-                                -- make sure parent exists befor einsert
-                                IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
-                                BEGIN
-                                -- make sure child exists befor einsert
-                                    IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
+                                    -- make sure parent exists befor einsert
+                                    IF EXISTS (SELECT 1 FROM parent WHERE parent_id_number = @parent_id_number)
                                     BEGIN
-                                        INSERT INTO child (child_first_name, child_last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_name, parent_id_number, gender)
-                                        VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_name, @parent_id_number, @gender);
+                                    -- make sure child exists befor einsert
+                                        IF NOT EXISTS (SELECT 1 FROM child WHERE parent_id_number = @parent_id_number)
+                                        BEGIN
+                                            INSERT INTO child (child_first_name, child_last_name, date_of_birth, emergency_contact_number, emergency_contact_first_name, emergency_contact_last_name, class_name, parent_id_number)
+                                            VALUES (@child_first_name, @child_last_name, @date_of_birth, @emergency_contact_number, @emergency_contact_first_name, @emergency_contact_last_name, @class_name, @parent_id_number);
 
-                                        COMMIT TRANSACTION;
-                                        PRINT 'Child record added successfully.';
+                                            COMMIT TRANSACTION;
+                                            PRINT 'Child record added successfully.';
+                                        END
+                                        ELSE
+                                        BEGIN
+                                            PRINT 'Error: Parent already has a child.';
+                                            ROLLBACK TRANSACTION;
+                                        END
                                     END
                                     ELSE
                                     BEGIN
-                                        PRINT 'Error: Parent already has a child.';
+                                        PRINT 'Error: Parent does not exist.';
                                         ROLLBACK TRANSACTION;
                                     END
-                                END
-                                ELSE
-                                BEGIN
-                                    PRINT 'Error: Parent does not exist.';
+                                END TRY
+                                BEGIN CATCH
                                     ROLLBACK TRANSACTION;
-                                END
-                            END TRY
-                            BEGIN CATCH
-                                ROLLBACK TRANSACTION;
-                                PRINT 'There was an error inserting into system';
-                            END CATCH
-
+                                    PRINT 'There was an error inserting into system';
+                                END CATCH
                             END
                             ELSE
                             BEGIN
-                                PRINT 'Error: Gender has to match either Male or Female. Please enter Male or Female';
+                                PRINT 'Error: Date of birth cannot be greater than the current date.';
                             END
-                            
                         END
                         ELSE
                         BEGIN
-                            PRINT 'Error: Date of birth cannot be greater than the current date.';
+                            PRINT 'Error: Parent ID number should contain only numbers and be exactly 11 characters long.';
                         END
                     END
                     ELSE
                     BEGIN
-                        PRINT 'Error: Parent ID number should contain only numbers and be exactly 11 characters long.';
+                        PRINT 'Error: Emergency contact number should contain only numbers and be exactly 10 characters long.';
                     END
                 END
                 ELSE
                 BEGIN
-                    PRINT 'Error: Emergency contact number should contain only numbers and be exactly 10 characters long.';
+                    PRINT 'Error: Emergency contact last name should contain only letters.';
                 END
             END
             ELSE
             BEGIN
-                PRINT 'Error: Emergency contact last name should contain only letters.';
+                PRINT 'Error: Emergency contact first name should contain only letters.';
             END
         END
         ELSE
         BEGIN
-            PRINT 'Error: Emergency contact first name should contain only letters.';
+            PRINT 'Error: Child last name should contain only letters.';
         END
     END
     ELSE
     BEGIN
-        PRINT 'Error: Child last name should contain only letters.';
+        PRINT 'Error: Child first name should contain only letters.';
     END
-END
-ELSE
-BEGIN
-    PRINT 'Error: Child first name should contain only letters.';
-END
 END;
 
 
