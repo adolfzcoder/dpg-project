@@ -1,9 +1,5 @@
--- CREATE DATABASE childQRSystem
--- USE childQRSystem
- -- CREATE DATABASE childChurchQR_production;
--- USE childChurchQR_production;
--- CREATE DATABASE childChurchQrSystem
--- USE childChurchQrSystem
+-- CREATE DATABASE qrSystemDPG
+-- USE qrSystemDPG
 CREATE TABLE teacher (
     teacher_id_number CHAR(11) PRIMARY KEY,
     first_name VARCHAR(30) NOT NULL,
