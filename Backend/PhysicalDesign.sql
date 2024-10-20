@@ -62,7 +62,9 @@ CREATE TABLE pickup (
     pickup_time TIME NOT NULL,
     pickup_date DATE NOT NULL,
     qrcode_id INT NOT NULL,
-    FOREIGN KEY (qrcode_id) REFERENCES qrcode(qrcode_id)
+    child_id INT NOT NULL,
+    FOREIGN KEY (qrcode_id) REFERENCES qrcode(qrcode_id),
+    FOREIGN KEY (child_id) REFERENCES child(child_id)
 );
 
 CREATE TABLE adminTable (
