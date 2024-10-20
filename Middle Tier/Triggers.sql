@@ -100,9 +100,10 @@ BEGIN
 END;
 
 -- Trigger for UPDATE on parent table  then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
+
 CREATE TRIGGER trg_parent_update
 ON parent
-AFTER UPDATE
+AFTER INSERT
 AS
 BEGIN
     DECLARE @new_values VARCHAR(MAX);
@@ -113,7 +114,8 @@ BEGIN
     SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
     SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
 
-    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, @table_name);
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
 -- fired after insert to child table then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
