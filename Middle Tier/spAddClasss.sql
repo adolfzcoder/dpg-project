@@ -26,8 +26,8 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- Insert class details
-        INSERT INTO class (class_name, start_time, venue, has_projector, end_time, teacher_id_number, age_range_start, age_range_end)
-        VALUES (@class_name, @start_time, @venue, @has_projector, @endTime, @teacherIdNumber, @ageRangeStart, @ageRangeEnd);
+        INSERT INTO class (class_name, start_time, venue, has_projector, end_time, age_range_start, age_range_end)
+        VALUES (@class_name, @start_time, @venue, @has_projector, @endTime, @ageRangeStart, @ageRangeEnd);
 
         COMMIT TRANSACTION;
     END TRY
