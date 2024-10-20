@@ -1,3 +1,4 @@
+
 CREATE PROCEDURE spAddClass
     @class_name VARCHAR(30),
     @start_time TIME,
@@ -39,13 +40,3 @@ BEGIN
     END CATCH
 END;
 
-DECLARE @class_name VARCHAR(30) = 'Math101';
-DECLARE @start_time TIME = '08:00';
-DECLARE @venue VARCHAR(30) = 'Room 101';
-DECLARE @has_projector BIT = 1;
-DECLARE @end_time TIME = '10:00';
-DECLARE @teacher_id_number CHAR(11) = '12345678901';
-DECLARE @age_range_start INT = 10;
-DECLARE @age_range_end INT = 12;
-
-EXEC spAddClass @class_name, @start_time, @venue, @has_projector, @end_time, @teacher_id_number, @age_range_start, @age_range_end;
