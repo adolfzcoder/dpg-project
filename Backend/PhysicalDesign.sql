@@ -38,7 +38,7 @@ CREATE TABLE child (
     emergency_contact_last_name VARCHAR(30),
     gender CHAR(1) NOT NULL,
     class_id INT,
-    parent_id_number CHAR(11) NOT NULL UNIQUE,  -- Enforce one-to-one relationship
+    C CHAR(11) NOT NULL UNIQUE,  -- Enforce one-to-one relationship
     FOREIGN KEY (parent_id_number) REFERENCES parent(parent_id_number),
     FOREIGN KEY (class_id) REFERENCES class(class_id)
 );

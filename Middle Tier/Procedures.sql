@@ -291,6 +291,75 @@ VALUES
 ('John', 'Kavango', '2010-05-15', '82010154321');
 
 
+EXEC viewQr
+
+EXEC spPickupVerification 'John', 'Kavango', '82010154321'
+
+CREATE PROCEDURE spPickupVerification
+
+@child_first_name VARCHAR(30),
+@child_last_name VARCHAR(30),
+@parent_id_number CHAR(11),
+
+@child_verification_code INT,
+@parent_verification_code INT
+
+AS
+BEGIN
+
+DECLARE @child_id INT;
+DECLARE @first_name_from_db VARCHAR(30);
+DECLARE @last_name_from_db VARCHAR(30);
+DECLARE @parent_id_number_from_db CHAR(11);
+DECLARE @child_verification_code_from_db VARCHAR(70); -- first name, last name, timestamp are 30, 30, 18 char so it can be 70 length
+DECLARE @verification_from_db INT;
+DECLARE @qr_code_url VARCHAR(255);
+
+-- Retrieve child and parent details
+SELECT  @first_name_from_db = first_name, 
+        @last_name_from_db = last_name,
+        @parent_id_number_from_db = parent_id_number,
+        @child_id = child_id
+       
+FROM child
+WHERE first_name = @child_first_name AND 
+      last_name = @child_last_name AND 
+      parent_id_number = @parent_id_number;
+
+-- Retrieve the qr_code_url from the qrcode table where picked_up is 0
+SELECT @qr_code_url = qr_code_url
+FROM qrcode
+WHERE child_id = @child_id AND picked_up = 0;
+
+-- Check if qr_code_url was found
+IF @qr_code_url IS NOT NULL
+BEGIN
+    -- Find the position of the timestamp in the URL
+    DECLARE @start_pos INT = CHARINDEX('data=', @qr_code_url) + 5;
+    DECLARE @end_pos INT = CHARINDEX('_&color=', @qr_code_url);
+
+    -- Extract the substring that represents the timestamp
+    SET @child_verification_code_from_db = SUBSTRING(@qr_code_url, @start_pos, @end_pos - @start_pos);
+
+    PRINT @child_verification_code_from_db;
+
+    -- Update the picked_up status to 1
+    UPDATE qrcode
+    SET picked_up = 1
+    WHERE child_id = @child_id AND picked_up = 0;
+END
+ELSE
+BEGIN
+    PRINT 'Error: No QR code found for the child with picked_up status 0.';
+END;
+
+END
+
+
+
+
+
+
 DELETE FROM qrcode
 EXEC spGenerateQrCode 'John', 'Kavango'
 EXEC viewQr
@@ -683,3 +752,62 @@ BEGIN
 END;
 
 
+
+
+
+
+
+EXECUTE msdb.dbo.sysmail_add_profile_sp
+@profile_name = 'Adolf12',
+@description = 'Qr Email Sender12';
+
+-- create a mail account
+
+EXECUTE msdb.dbo.sysmail_add_account_sp
+@account_name = 'SQL Email Account12',
+@email_address = 'hanguladavid18@gmail.com',
+@mailserver_name = 'smtp.gmail.com',
+@port=587,
+@enable_ssl = 1,
+@username = 'learn.knowstar12',
+@password = 'wfqv boro jvmp umwy'
+
+-- Add email account to Profile
+
+EXECUTE msdb.dbo.sysmail_add_profileaccount_sp
+@profile_name = 'Adolf12',
+@account_name = 'SQL Email Account12',
+@sequence_number = 1;
+
+
+-- granting acces to profile to a user/role
+
+EXECUTE msdb.dbo.sysmail_add_principalprofile_sp
+@profile_name = 'Adolf12',
+@principal_id = 0,
+@is_default = 1;
+
+
+-- enabing databse email
+USE master;
+
+GO
+
+sp_configure 'show advanced options', 1
+RECONFIGURE
+GO
+
+sp_configure 'Database Mail XPs', 1
+RECONFIGURE
+
+
+EXECUTE msdb.dbo.sp_send_dbmail
+@profile_name = 'Adolf12',
+@recipients = 'hanguldavid17@gmail.com',
+@body = 'Testing',
+@subject = 'Test System mail qr'
+
+
+SELECT * 
+FROM msdb.dbo.sysmail_event_log
+ORDER BY log_date DESC;
