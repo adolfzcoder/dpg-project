@@ -96,17 +96,33 @@ END;
 
 -- In order to allow adding a new admin, we have to make sure that the user that is trying to add a new admin has a role of superadmin. Their role is set when they login, using the spAdminLoginVerification procedure. We store the information about logged in user in session context values, which we can later use. We can then compare the role of the currently logged to check if its a regular admin or superadmin.
 
+-- EXEC addAdmin 'Adolf', 'Pass@123', 'adolfdavid17@gmail.com', '0816166875'
+-- Use this to test and see the values needed for this procedure
+--EXEC viewAdmin
 
+-- DELETE FROM adminTable
+-- CREATE TABLE adminTable (
+--     admin_id INT PRIMARY KEY IDENTITY,
+--     username VARCHAR(30) NOT NULL UNIQUE,
+--     password VARCHAR(255) NOT NULL,
+--     email VARCHAR(45) NOT NULL UNIQUE,
+--     role VARCHAR(20) DEFAULT 'admin',  -- 'admin' or 'superadmin', superadmins can add other admins
+--     phone_number CHAR(10) UNIQUE,
+--     created_at DATETIME DEFAULT GETDATE()
+-- );
+
+-- In order to allow adding a new admin, we have to make sure that the user that is trying to add a new admin has a role of superadmin. Their role is set when they login, using the spAdminLoginVerification procedure. We store the information about logged in user in session context values, which we can later use. We can then compare the role of the currently logged to check if its a regular admin or superadmin.
 CREATE PROCEDURE spAddAdmin
-@username VARCHAR(30),
-@password VARCHAR(50),
-@email VARCHAR(45),
-@phone_number CHAR(10)
+    @username VARCHAR(30),
+    @password VARCHAR(50),
+    @email VARCHAR(45),
+    @phone_number CHAR(10)
 AS
 BEGIN
     DECLARE @admin_role VARCHAR(20);
 
-    SELECT @admin_role = SESSION_CONTEXT(N'admin_role');
+    -- Retrieve the admin role from the session context and convert it to varchar
+    SELECT @admin_role = CONVERT(VARCHAR(20), SESSION_CONTEXT(N'admin_role'));
 
     -- Check if the admin role is 'superadmin'
     IF @admin_role <> 'superadmin'
@@ -180,7 +196,6 @@ BEGIN
         PRINT 'Error: Username should contain only letters.';
     END
 END;
-
 
 EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
 -- DELETE  FROM adminTable

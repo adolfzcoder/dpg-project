@@ -15,15 +15,16 @@
 
 -- In order to allow adding a new admin, we have to make sure that the user that is trying to add a new admin has a role of superadmin. Their role is set when they login, using the spAdminLoginVerification procedure. We store the information about logged in user in session context values, which we can later use. We can then compare the role of the currently logged to check if its a regular admin or superadmin.
 CREATE PROCEDURE spAddAdmin
-@username VARCHAR(30),
-@password VARCHAR(50),
-@email VARCHAR(45),
-@phone_number CHAR(10)
+    @username VARCHAR(30),
+    @password VARCHAR(50),
+    @email VARCHAR(45),
+    @phone_number CHAR(10)
 AS
 BEGIN
     DECLARE @admin_role VARCHAR(20);
 
-    SELECT @admin_role = SESSION_CONTEXT(N'admin_role');
+    -- Retrieve the admin role from the session context and convert it to varchar
+    SELECT @admin_role = CONVERT(VARCHAR(20), SESSION_CONTEXT(N'admin_role'));
 
     -- Check if the admin role is 'superadmin'
     IF @admin_role <> 'superadmin'
