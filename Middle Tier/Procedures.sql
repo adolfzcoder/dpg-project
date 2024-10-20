@@ -152,7 +152,7 @@ CREATE PROCEDURE spAddParent
     @last_name VARCHAR(30),
     @phone_number CHAR(10),
     @email VARCHAR(45),
-    @town VARCHAR (30),
+    @home_address VARCHAR (30),
     @gender CHAR(1)
 AS
 BEGIN
@@ -173,12 +173,12 @@ BEGIN
                         SET @gender = 'F';
                     END
 
-                    IF @town NOT LIKE '%[^A-Za-z]%' AND LEN(@town) > 0
+                    IF @home_address NOT LIKE '%[^A-Za-z]%' AND LEN(@home_address) > 0
                     BEGIN
                         BEGIN TRY
                             BEGIN TRANSACTION
-                                INSERT INTO parent(parent_id_number, first_name, last_name, phone_number, email, town, gender)
-                                VALUES(@parent_id_number, @first_name, @last_name, @phone_number, @email, @town, @gender)
+                                INSERT INTO parent(parent_id_number, first_name, last_name, phone_number, email, home_address, gender)
+                                VALUES(@parent_id_number, @first_name, @last_name, @phone_number, @email, @home_address, @gender)
                             COMMIT TRANSACTION
                             PRINT 'Parent record added successfully'
                         END TRY
@@ -228,7 +228,7 @@ BEGIN
     DECLARE @admin_username VARCHAR(30);
     DECLARE @admin_role VARCHAR(20);
     DECLARE @admin_email VARCHAR(45);
-    DECLARE @admin_id INT;
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
 
     BEGIN TRY
                     --email should be in valid email format
@@ -309,7 +309,7 @@ EXEC viewChild;
 EXEC viewClass
 EXEC viewTeacher
 DELETE FROM teacher
-INSERT INTO teacher (teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number)
+INSERT INTO teacher (teacher_id_number, first_name, last_name, phone_number, email, home_address, office_room_number)
 VALUES 
 ('98031712345', 'Petrus', 'Nangolo', '0812345678', 'petrusnangolo@example.com', 'Windhoek', 101),
 ('85020256789', 'Maria', 'Kandjii', '0818765432', 'mariakandjii@example.com', 'Swakopmund', 102),
@@ -326,7 +326,7 @@ VALUES
 ('Art 101', '13:15:00', 'Room 204', 0, '14:45:00', '87040411223'),
 ('Music 101', '15:00:00', 'Room 205', 1, '16:30:00', '95050533444');
 
-INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
+INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, home_address)
 VALUES 
 ('99051790321', 'Adolf', 'Chikombo', '0816166785', 'adavid@muhoko.org', 'Otjiarare')
 
@@ -429,7 +429,7 @@ BEGIN
     END CATCH
 END;
 
--- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
+-- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, home_address)
 -- VALUES 
 -- ('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek')
 
@@ -637,7 +637,7 @@ EXEC viewTeacher
 --     last_name VARCHAR(30) NOT NULL,
 --     phone_number CHAR(10) NOT NULL UNIQUE,
 --     email VARCHAR(45) NOT NULL UNIQUE,
---     town VARCHAR(30),  
+--     home_address VARCHAR(30),  
 --     office_room_number INT NOT NULL, -- could be in the same room, but sharing, so can't be unique
 --     gender CHAR(1) NOT NULL
     
@@ -653,7 +653,7 @@ CREATE PROCEDURE spAddTeacher
 @last_name VARCHAR(30),
 @phone_number CHAR(10),
 @email VARCHAR(45),
-@town VARCHAR(30),  
+@home_address VARCHAR(30),  
 @office_room_number INT,
 @gender CHAR(1)
 AS
@@ -664,7 +664,7 @@ BEGIN
     BEGIN
       IF LEN(@phone_number) = 10
       BEGIN
-        IF @town NOT LIKE '%[^A-Za-z]%' AND LEN(@town) > 0
+        IF @home_address NOT LIKE '%[^A-Za-z]%' AND LEN(@home_address) > 0
         BEGIN
           IF ISNUMERIC(@office_room_number) = 1
           BEGIN
@@ -681,8 +681,8 @@ BEGIN
 
               BEGIN TRY
                 BEGIN TRANSACTION
-                INSERT INTO teacher(teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number, gender)
-                VALUES(@teacher_id_number , @first_name, @last_name, @phone_number, @email, @town, @office_room_number, @gender);
+                INSERT INTO teacher(teacher_id_number, first_name, last_name, phone_number, email, home_address, office_room_number, gender)
+                VALUES(@teacher_id_number , @first_name, @last_name, @phone_number, @email, @home_address, @office_room_number, @gender);
 
                 COMMIT TRANSACTION
                 PRINT 'Teacher record added successfully.';
@@ -935,7 +935,7 @@ VALUES
 --     last_name VARCHAR(30) NOT NULL,
 --     phone_number CHAR(10) NOT NULL UNIQUE,
 --     email VARCHAR(45) NOT NULL UNIQUE,
---     town VARCHAR(30),
+--     home_address VARCHAR(30),
 --     gender CHAR(1) NOT NULL
 -- );
 
@@ -948,7 +948,7 @@ CREATE PROCEDURE spAddParent
     @last_name VARCHAR(30),
     @phone_number CHAR(10),
     @email VARCHAR(45),
-    @town VARCHAR (30),
+    @home_address VARCHAR (30),
     @gender CHAR(1)
 AS
 BEGIN
@@ -969,12 +969,12 @@ BEGIN
                         SET @gender = 'F';
                     END
 
-                    IF @town NOT LIKE '%[^A-Za-z]%' AND LEN(@town) > 0
+                    IF @home_address NOT LIKE '%[^A-Za-z]%' AND LEN(@home_address) > 0
                     BEGIN
                         BEGIN TRY
                             BEGIN TRANSACTION
-                                INSERT INTO parent(parent_id_number, first_name, last_name, phone_number, email, town, gender)
-                                VALUES(@parent_id_number, @first_name, @last_name, @phone_number, @email, @town, @gender)
+                                INSERT INTO parent(parent_id_number, first_name, last_name, phone_number, email, home_address, gender)
+                                VALUES(@parent_id_number, @first_name, @last_name, @phone_number, @email, @home_address, @gender)
                             COMMIT TRANSACTION
                             PRINT 'Parent record added successfully'
                         END TRY

@@ -10,7 +10,7 @@ CREATE TABLE teacher (
     last_name VARCHAR(30) NOT NULL,
     phone_number CHAR(10) NOT NULL UNIQUE,
     email VARCHAR(45) NOT NULL UNIQUE,
-    town VARCHAR(30),  
+    home_address VARCHAR(30),  
     office_room_number INT NOT NULL, -- could be in the same room, but sharing, so can't be unique
     gender CHAR(1) NOT NULL
 
@@ -40,10 +40,9 @@ CREATE TABLE parent (
     last_name VARCHAR(30) NOT NULL,
     phone_number CHAR(10) NOT NULL UNIQUE,
     email VARCHAR(45) NOT NULL UNIQUE,
-    town VARCHAR(30),
-    gender CHAR(1) NOT NULL,
-    age_range_start INT NOT NULL,
-    age_range_end INT NOT NULL
+    home_address VARCHAR(30),
+    gender CHAR(1) NOT NULL
+    
 );
 
 CREATE TABLE child (

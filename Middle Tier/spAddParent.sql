@@ -4,7 +4,7 @@
 --     last_name VARCHAR(30) NOT NULL,
 --     phone_number CHAR(10) NOT NULL UNIQUE,
 --     email VARCHAR(45) NOT NULL UNIQUE,
---     town VARCHAR(30),
+--     home_address VARCHAR(30),
 --     gender CHAR(1) NOT NULL
 -- );
 
@@ -17,7 +17,7 @@ CREATE PROCEDURE spAddParent
     @last_name VARCHAR(30),
     @phone_number CHAR(10),
     @email VARCHAR(45),
-    @town VARCHAR (30),
+    @home_address VARCHAR (30),
     @gender CHAR(1)
 AS
 BEGIN
@@ -38,12 +38,12 @@ BEGIN
                         SET @gender = 'F';
                     END
 
-                    IF @town NOT LIKE '%[^A-Za-z]%' AND LEN(@town) > 0
+                    IF @home_address NOT LIKE '%[^A-Za-z]%' AND LEN(@home_address) > 0
                     BEGIN
                         BEGIN TRY
                             BEGIN TRANSACTION
-                                INSERT INTO parent(parent_id_number, first_name, last_name, phone_number, email, town, gender)
-                                VALUES(@parent_id_number, @first_name, @last_name, @phone_number, @email, @town, @gender)
+                                INSERT INTO parent(parent_id_number, first_name, last_name, phone_number, email, home_address, gender)
+                                VALUES(@parent_id_number, @first_name, @last_name, @phone_number, @email, @home_address, @gender)
                             COMMIT TRANSACTION
                             PRINT 'Parent record added successfully'
                         END TRY

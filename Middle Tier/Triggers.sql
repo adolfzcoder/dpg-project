@@ -1,28 +1,265 @@
-CREATE TRIGGER trgAfterInsertQrCode
+CREATE TRIGGER trg_qr_insert
 ON qrcode
 AFTER INSERT
 AS
 BEGIN
     DECLARE @qr_code_url VARCHAR(255);
-    DECLARE @admin_id INT;
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
     DECLARE @table_name VARCHAR(255) = 'qrcode';
     DECLARE @current_timestamp DATETIME;
 
-
     SET @current_timestamp = GETDATE();
-
-
-    
 
     -- Get the QR code URL from the inserted row
     SELECT @qr_code_url = qr_code_url
     FROM inserted;
 
-    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
 
     
-
-    -- Insert a log entry
     INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
     VALUES ('QR Code Generated', @qr_code_url, @current_timestamp, @admin_id, @table_name);
+END;
+
+
+
+-- trg for update on qr table
+CREATE TRIGGER trg_qrcode_update
+ON qrcode
+AFTER UPDATE
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'qrcode';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+
+
+--triggwr for insert on teachers table
+CREATE TRIGGER trg_teacher_insert
+ON teacher
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'teacher';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+-- this trigger is fired after any updates to the teacher tble
+CREATE TRIGGER trg_teacher_update
+ON teacher
+AFTER UPDATE
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'teacher';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+-- Repeat similar triggers for other tables
+
+-- Trigger for INSERT on class table
+CREATE TRIGGER trg_class_insert
+ON class
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'class';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+-- Trigger for UPDATE on class table
+CREATE TRIGGER trg_class_update
+ON class
+AFTER UPDATE
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'class';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+-- Repeat similar triggers for other tables (parent, child, qrcode, pickup, adminTable)
+
+-- Trigger for INSERT on parent table
+CREATE TRIGGER trg_parent_insert
+ON parent
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'parent';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+-- Trigger for UPDATE on parent table
+CREATE TRIGGER trg_parent_update
+ON parent
+AFTER UPDATE
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'parent';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, @table_name);
+END;
+
+-- Trigger for INSERT on child table
+CREATE TRIGGER trg_child_insert
+ON child
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'child';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+-- trg for update on qr table
+CREATE TRIGGER trg_child_update
+ON child
+AFTER UPDATE
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'child';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+
+-- fired afer insert to pickup table 
+CREATE TRIGGER trg_pickup_insert
+ON pickup
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'pickup';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+-- fired afer update to pickup table 
+CREATE TRIGGER trg_pickup_update
+ON pickup
+AFTER UPDATE
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX); -- new values can be large, hence why using (MAX) it can store uop to 2GB of data
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'pickup';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+-- this trigger is fired after any insert to the teacher tble
+CREATE TRIGGER trg_adminTable_insert
+ON adminTable
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'adminTable';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
+END;
+
+-- this trigger is fired after any updates to the admin tble
+
+CREATE TRIGGER trg_adminTable_update
+ON adminTable
+AFTER UPDATE
+AS
+BEGIN
+    DECLARE @new_values VARCHAR(MAX);
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
+    DECLARE @current_timestamp DATETIME = GETDATE();
+    DECLARE @table_name VARCHAR(255) = 'adminTable';
+
+    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
+    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in
+
+    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
+    VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
 END;

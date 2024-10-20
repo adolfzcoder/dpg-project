@@ -1,4 +1,4 @@
-INSERT INTO teacher (teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number)
+INSERT INTO teacher (teacher_id_number, first_name, last_name, phone_number, email, home_address, office_room_number)
 VALUES 
 ('98031712345', 'Petrus', 'Nangolo', '0812345678', 'petrusnangolo@example.com', 'Windhoek', 101),
 ('85020256789', 'Maria', 'Kandjii', '0818765432', 'mariakandjii@example.com', 'Swakopmund', 102),
@@ -15,7 +15,7 @@ VALUES
 ('Music 101', '15:00:00', 'Room 205', 1, '16:30:00', '95050533444');
 
 -- Insert data into parent table
-INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
+INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, home_address)
 VALUES 
 ('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek'),
 ('83020265432', 'David', 'Ndebele', '0818765432', 'davidndebele@example.com', 'Swakopmund'),

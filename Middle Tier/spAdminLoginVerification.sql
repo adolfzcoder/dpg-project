@@ -22,7 +22,7 @@ BEGIN
     DECLARE @admin_username VARCHAR(30);
     DECLARE @admin_role VARCHAR(20);
     DECLARE @admin_email VARCHAR(45);
-    DECLARE @admin_id INT;
+     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
 
     BEGIN TRY
                     --email should be in valid email format

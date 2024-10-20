@@ -4,7 +4,7 @@
 --     last_name VARCHAR(30) NOT NULL,
 --     phone_number CHAR(10) NOT NULL UNIQUE,
 --     email VARCHAR(45) NOT NULL UNIQUE,
---     town VARCHAR(30),  
+--     home_address VARCHAR(30),  
 --     office_room_number INT NOT NULL, -- could be in the same room, but sharing, so can't be unique
 --     gender CHAR(1) NOT NULL
     
@@ -20,7 +20,7 @@ CREATE PROCEDURE spAddTeacher
 @last_name VARCHAR(30),
 @phone_number CHAR(10),
 @email VARCHAR(45),
-@town VARCHAR(30),  
+@home_address VARCHAR(30),  
 @office_room_number INT,
 @gender CHAR(1)
 AS
@@ -31,7 +31,7 @@ BEGIN
     BEGIN
       IF LEN(@phone_number) = 10
       BEGIN
-        IF @town NOT LIKE '%[^A-Za-z]%' AND LEN(@town) > 0
+        IF @home_address NOT LIKE '%[^A-Za-z]%' AND LEN(@home_address) > 0
         BEGIN
           IF ISNUMERIC(@office_room_number) = 1
           BEGIN
@@ -48,8 +48,8 @@ BEGIN
 
               BEGIN TRY
                 BEGIN TRANSACTION
-                INSERT INTO teacher(teacher_id_number, first_name, last_name, phone_number, email, town, office_room_number, gender)
-                VALUES(@teacher_id_number , @first_name, @last_name, @phone_number, @email, @town, @office_room_number, @gender);
+                INSERT INTO teacher(teacher_id_number, first_name, last_name, phone_number, email, home_address, office_room_number, gender)
+                VALUES(@teacher_id_number , @first_name, @last_name, @phone_number, @email, @home_address, @office_room_number, @gender);
 
                 COMMIT TRANSACTION
                 PRINT 'Teacher record added successfully.';
@@ -86,7 +86,7 @@ BEGIN
         END
         ELSE
         BEGIN
-          PRINT 'Error: Town should contain only letters.';
+          PRINT 'Error: home_address should contain only letters.';
         END
       END
       ELSE
