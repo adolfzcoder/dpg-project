@@ -483,13 +483,18 @@ BEGIN
         END
     END CATCH
 END;
--- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, home_address)
--- VALUES 
--- ('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek')
+
+DECLARE @qr_code_url VARCHAR(255);
+
+EXEC spGenerateQrCode 
+    @first_name = 'John', 
+    @last_name = 'Kavango', 
+    @qr_code_url_out = @qr_code_url OUTPUT;
+
+PRINT 'Generated QR Code URL: ' + @qr_code_url;
 
 
--- exec viewParent
--- ('John', 'Kavango', '2010-05-15', '0811234567', 'Peter', 'Kavango', 'Math 101', '82010154321'),
+
 
 EXEC spAddChild 'John', 'Kavango', '2010-05-15', '0811234567', 'Peter', 'Kavango', 'Math 101', '82010154321'
 

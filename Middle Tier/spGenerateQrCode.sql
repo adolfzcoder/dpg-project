@@ -88,3 +88,12 @@ BEGIN
         END
     END CATCH
 END;
+
+DECLARE @qr_code_url VARCHAR(255);
+
+EXEC spGenerateQrCode 
+    @first_name = 'John', 
+    @last_name = 'Kavango', 
+    @qr_code_url_out = @qr_code_url OUTPUT;
+
+PRINT 'Generated QR Code URL: ' + @qr_code_url;
