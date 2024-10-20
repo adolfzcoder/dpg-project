@@ -1,17 +1,6 @@
 -- CREATE DATABASE qrSystemDPG
 -- USE qrSystemDPG
-CREATE TABLE teacher (
-    teacher_id_number CHAR(11) PRIMARY KEY,
-    first_name VARCHAR(30) NOT NULL,
-    last_name VARCHAR(30) NOT NULL,
-    phone_number CHAR(10) NOT NULL UNIQUE,
-    email VARCHAR(45) NOT NULL UNIQUE,
-    home_address VARCHAR(30),  
-    office_room_number INT NOT NULL, -- could be in the same room, but sharing, so can't be unique
-    gender CHAR(1) NOT NULL
 
-
-);
 
 -- DROP TABLE class
 CREATE TABLE class (
@@ -21,10 +10,8 @@ CREATE TABLE class (
     venue VARCHAR(30) NOT NULL,
     has_projector BIT NULL,
     end_time TIME NOT NULL,
-    teacher_id_number CHAR(11) NOT NULL,
     age_range_start INT,
-    age_range_end INT,
-    FOREIGN KEY (teacher_id_number) REFERENCES teacher(teacher_id_number)
+    age_range_end INT
 );
 
 

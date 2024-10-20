@@ -26,16 +26,10 @@ END
 -- EXEC viewClass
 -- EXEC viewChild
 
-CREATE PROC viewTeacher
-AS
-BEGIN
-
-SELECT * FROM teacher
-
-END
 
 
--- EXEC viewTeacher
+
+
 
 
 CREATE PROC viewParent
@@ -262,24 +256,9 @@ END;
 
 EXEC viewChild;
 EXEC viewClass
-EXEC viewTeacher
-DELETE FROM teacher
-INSERT INTO teacher (teacher_id_number, first_name, last_name, phone_number, email, home_address, office_room_number)
-VALUES 
-('98031712345', 'Petrus', 'Nangolo', '0812345678', 'petrusnangolo@example.com', 'Windhoek', 101),
-('85020256789', 'Maria', 'Kandjii', '0818765432', 'mariakandjii@example.com', 'Swakopmund', 102),
-('90030391012', 'Johannes', 'Shilongo', '0811122334', 'johannesshilongo@example.com', 'Walvis Bay', 103),
-('87040411223', 'Elina', 'Amutenya', '0812233445', 'elinaamutenya@example.com', 'Oshakati', 104),
-('95050533444', 'Samuel', 'Kaunda', '0813344556', 'samuelkaunda@example.com', 'Rundu', 105);
 
 
-INSERT INTO class (class_name, start_time, venue, has_projector, end_time, teacher_id_number)
-VALUES 
-('Math 101', '08:00:00', 'Room 201', 1, '09:30:00', '98031712345'),
-('Science 101', '09:45:00', 'Room 202', 0, '11:15:00', '85020256789'),
-('History 101', '11:30:00', 'Room 203', 1, '13:00:00', '90030391012'),
-('Art 101', '13:15:00', 'Room 204', 0, '14:45:00', '87040411223'),
-('Music 101', '15:00:00', 'Room 205', 1, '16:30:00', '95050533444');
+
 
 INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, home_address)
 VALUES 
@@ -583,115 +562,9 @@ END;
 
 
 
-EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404', 'female'
-EXEC viewTeacher
-
--- CREATE TABLE teacher (
---     teacher_id_number CHAR(11) PRIMARY KEY,
---     first_name VARCHAR(30) NOT NULL,
---     last_name VARCHAR(30) NOT NULL,
---     phone_number CHAR(10) NOT NULL UNIQUE,
---     email VARCHAR(45) NOT NULL UNIQUE,
---     home_address VARCHAR(30),  
---     office_room_number INT NOT NULL, -- could be in the same room, but sharing, so can't be unique
---     gender CHAR(1) NOT NULL
-    
-     
--- );
-
-
-EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404', 'f'
-EXEC viewTeacher
-CREATE PROCEDURE spAddTeacher
-@teacher_id_number CHAR(11),
-@first_name VARCHAR(30),
-@last_name VARCHAR(30),
-@phone_number CHAR(10),
-@email VARCHAR(45),
-@home_address VARCHAR(30),  
-@office_room_number INT,
-@gender CHAR(1)
-AS
-BEGIN
-  IF @first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@first_name) > 0
-  BEGIN
-    IF @last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@last_name) > 0
-    BEGIN
-      IF LEN(@phone_number) = 10
-      BEGIN
-        IF @home_address NOT LIKE '%[^A-Za-z]%' AND LEN(@home_address) > 0
-        BEGIN
-          IF ISNUMERIC(@office_room_number) = 1
-          BEGIN
-            IF LOWER(@gender) LIKE 'm' OR LOWER(@gender) LIKE 'f'
-            BEGIN
-              IF @gender LIKE 'm'
-              BEGIN
-                SET @gender = 'M';
-              END
-              ELSE
-              BEGIN
-                SET @gender = 'F';
-              END
-
-              BEGIN TRY
-                BEGIN TRANSACTION
-                INSERT INTO teacher(teacher_id_number, first_name, last_name, phone_number, email, home_address, office_room_number, gender)
-                VALUES(@teacher_id_number , @first_name, @last_name, @phone_number, @email, @home_address, @office_room_number, @gender);
-
-                COMMIT TRANSACTION
-                PRINT 'Teacher record added successfully.';
-              END TRY
-              BEGIN CATCH
-                ROLLBACK TRANSACTION
-                PRINT 'There was an error inserting into system, please try again';
 
 
 
-                 EXEC spHandleError;
-
-                DECLARE @ErrorNumber INT = ERROR_NUMBER();
-                IF @ErrorNumber = 2627 -- Unique constraint violation error code
-                BEGIN
-                  PRINT 'Error: Duplicate value. Either phone number or email already exists.';
-                END
-                ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
-                BEGIN
-                  PRINT 'Error: Foreign key violation.';
-                END
-
-              END CATCH
-            END
-            ELSE
-            BEGIN
-              PRINT 'Invalid gender. Please enter either male or female.';
-            END
-          END
-          ELSE
-          BEGIN
-            PRINT 'Error: Office room number should be a valid number.';
-          END
-        END
-        ELSE
-        BEGIN
-          PRINT 'Error: Town should contain only letters.';
-        END
-      END
-      ELSE
-      BEGIN
-        PRINT 'Error: Phone number should be exactly 10 characters long.';
-      END
-    END
-    ELSE
-    BEGIN
-      PRINT 'Error: Last name should contain only letters.';
-    END
-  END
-  ELSE
-  BEGIN
-    PRINT 'Error: First name should contain only letters.';
-  END
-END;
 
 
 
@@ -872,7 +745,7 @@ BEGIN
 END;
 
 -- Insert sample data into the class table
-INSERT INTO class (class_name, start_time, venue, has_projector, end_time, teacher_id_number, age_range_start, age_range_end)
+INSERT INTO class (class_name, start_time, venue, has_projector, end_time, age_range_start, age_range_end)
 VALUES 
 ('Nursery', '08:00', 'Room 101', 0, '12:00', 'TCH001', 3, 4),
 ('Pre-K', '08:00', 'Room 102', 1, '12:00', 'TCH002', 4, 5),

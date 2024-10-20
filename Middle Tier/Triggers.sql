@@ -43,43 +43,6 @@ END;
 
 
 
---triggwr for insert on teachers table then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
-CREATE TRIGGER trg_teacher_insert
-ON teacher
-AFTER INSERT
-AS
-BEGIN
-    DECLARE @new_values VARCHAR(MAX);
-     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in -- this value is stroed in the session, which is set after the admin logs in
-    DECLARE @current_timestamp DATETIME = GETDATE();
-    DECLARE @table_name VARCHAR(255) = 'teacher';
-
-    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
-    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in -- this value is stroed in the session, which is set after the admin logs in
-
-    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
-    VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
-END;
-
--- this trigger is fired after any updates to the teacher tble then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
-CREATE TRIGGER trg_teacher_update
-ON teacher
-AFTER UPDATE
-AS
-BEGIN
-    DECLARE @new_values VARCHAR(MAX);
-     DECLARE @admin_id INT; -- this value is stroed in the session, which is set after the admin logs in
-    DECLARE @current_timestamp DATETIME = GETDATE();
-    DECLARE @table_name VARCHAR(255) = 'teacher';
-
-    SET @new_values = (SELECT * FROM inserted FOR JSON PATH);
-    SET @admin_id = CAST(SESSION_CONTEXT(N'admin_id') AS INT); -- this value is stroed in the session, which is set after the admin logs in -- this value is stroed in the session, which is set after the admin logs in
-
-    INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, table_name)
-    VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
-END;
-
-
 
 -- Trigger for INSERT on class table  then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_class_insert
@@ -226,7 +189,7 @@ BEGIN
     VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
--- this trigger is fired after any insert to the teacher tble then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
+-- this trigger is fired after any insert to the admin table tble then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_adminTable_insert
 ON adminTable
 AFTER INSERT
