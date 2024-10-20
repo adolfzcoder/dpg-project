@@ -73,14 +73,6 @@ BEGIN
 
         EXEC spHandleError;
 
-        DECLARE @ErrorNumber INT = ERROR_NUMBER();
-        IF @ErrorNumber = 2627 -- Unique constraint violation error code
-        BEGIN
-            PRINT 'Error: Duplicate value. Either phone number or email already exists.';
-        END
-        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
-        BEGIN
-            PRINT 'Error: Foreign key violation.';
-        END
+        
     END CATCH
 END;

@@ -396,8 +396,8 @@ SELECT qr_code_url FROM qrcode
 
 DELETE FROM qrcode
 CREATE PROCEDURE spGenerateQrCode
-@first_name VARCHAR(30),
-@last_name VARCHAR(30)
+    @first_name VARCHAR(30),
+    @last_name VARCHAR(30)
 AS
 BEGIN
     DECLARE @qr_code_url VARCHAR(255);
@@ -407,12 +407,14 @@ BEGIN
     DECLARE @timestamp DATETIME = GETDATE();
     DECLARE @child_id INT;
     DECLARE @picked_up BIT;
+    DECLARE @uuid UNIQUEIDENTIFIER = NEWID();
+    DECLARE @short_uuid VARCHAR(16);
 
     BEGIN TRY
-    --make sure username is not empty and contains only letters
+        -- Make sure first name is not empty and contains only letters
         IF @first_name NOT LIKE '%[^A-Za-z]%' AND LEN(@first_name) > 0
         BEGIN
-        --make sure username is not empty and contains only letters
+            -- Make sure last name is not empty and contains only letters
             IF @last_name NOT LIKE '%[^A-Za-z]%' AND LEN(@last_name) > 0
             BEGIN
                 BEGIN TRANSACTION;
@@ -442,7 +444,9 @@ BEGIN
                     RETURN;
                 END
 
-                SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + ' ' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120) +'_'+ '&color=f3846c&qzone=4';
+                -- Generate the QR code URL with the truncated UUID
+                SET @short_uuid = LEFT(CONVERT(VARCHAR(36), @uuid), 16);
+                SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @short_uuid + '&color=f3846c&qzone=4';
 
                 INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id, picked_up)
                 VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id, 0);
@@ -466,16 +470,7 @@ BEGIN
 
         EXEC spHandleError;
 
-                                        DECLARE @ErrorNumber INT = ERROR_NUMBER();
-                                        IF @ErrorNumber = 2627 -- Unique constraint violation error code
-                                        BEGIN
-                                        PRINT 'Error: Duplicate value. Either phone number or email already exists.';
-                                        END
-                                        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
-                                        BEGIN
-                                        PRINT 'Error: Foreign key violation.';
-                                        END
-
+        
     END CATCH
 END;
 -- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, home_address)
