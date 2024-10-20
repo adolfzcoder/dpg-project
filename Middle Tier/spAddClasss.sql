@@ -1,4 +1,3 @@
-
 CREATE PROCEDURE spAddClass
     @class_name VARCHAR(30),
     @start_time TIME,
@@ -27,7 +26,7 @@ BEGIN
 
         -- Insert class details
         INSERT INTO class (class_name, start_time, venue, has_projector, end_time, age_range_start, age_range_end)
-        VALUES (@class_name, @start_time, @venue, @has_projector, @endTime, @ageRangeStart, @ageRangeEnd);
+        VALUES (@class_name, @start_time, @venue, @has_projector, @end_time, @age_range_start, @age_range_end);
 
         COMMIT TRANSACTION;
     END TRY
@@ -39,4 +38,5 @@ BEGIN
         EXEC spHandleError;
     END CATCH
 END;
+
 
