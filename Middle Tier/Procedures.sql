@@ -399,44 +399,6 @@ EXEC viewChild
 
 -- EXEC spAddChild 'John', 'Kavango', '2010-05-15', '0811234567', 'Peter', 'Kavango', 'Math 101', '82010154321'
 
--- EXEC viewParent
--- EXEC viewChild
--- CREATE TABLE child (
---     child_id INT PRIMARY KEY IDENTITY,
---     first_name VARCHAR(30) NOT NULL,
---     last_name VARCHAR(30) NOT NULL,
---     date_of_birth DATE,
---     emergency_contact_number CHAR(10) NOT NULL UNIQUE,
---     emergency_contact_firsst_name VARCHAR(30),
---     emergency_contact_last_name VARCHAR(30),
---     gender CHAR(1) NOT NULL,
---     class_id INT,
---     parent_id_number CHAR(11) NOT NULL UNIQUE,  -- Enforce one-to-one relationship
---     FOREIGN KEY (parent_id_number) REFERENCES parent(parent_id_number),
---     FOREIGN KEY (class_id) REFERENCES class(class_id)
--- );
-
-
-
-
-
-
--- CREATE TABLE child (
---     child_id INT PRIMARY KEY IDENTITY,
---     first_name VARCHAR(30) NOT NULL,
---     last_name VARCHAR(30) NOT NULL,
---     date_of_birth DATE,
---     emergency_contact_number CHAR(10) NOT NULL UNIQUE,
---     emergency_contact_firsst_name VARCHAR(30),
---     emergency_contact_last_name VARCHAR(30),
---     gender CHAR(1) NOT NULL,
---     class_id INT,
---     parent_id_number CHAR(11) NOT NULL UNIQUE,  -- Enforce one-to-one relationship
---     FOREIGN KEY (parent_id_number) REFERENCES parent(parent_id_number),
---     FOREIGN KEY (class_id) REFERENCES class(class_id)
--- );
-
-
 
 
 
@@ -487,6 +449,19 @@ BEGIN
                                     DECLARE @child_age INT;
                                     SET @child_age = DATEDIFF(YEAR, @date_of_birth, GETDATE());
 
+                                    -- Check if the child's age is greater than 17
+                                    IF @child_age > 17 
+                                    BEGIN
+                                        PRINT 'Error: Age should be 17 years or less.';
+                                        RETURN;
+                                    END
+
+                                    IF @child_age < 0 
+                                    BEGIN
+                                        PRINT 'Error: Age should be more than 1 or more years';
+                                        RETURN;
+                                    END
+
                                     -- Find the appropriate class for the child's age
                                     DECLARE @class_id INT;
                                     SELECT TOP 1 @class_id = class_id
@@ -525,23 +500,17 @@ BEGIN
                                         BEGIN CATCH
                                             ROLLBACK TRANSACTION;
                                             PRINT 'There was an error inserting into system, please try again';
+                                            EXEC spHandleError;
 
-
-                                            
-                                        EXEC spHandleError;
-
-                                        DECLARE @ErrorNumber INT = ERROR_NUMBER();
-                                        IF @ErrorNumber = 2627 -- Unique constraint violation error code
-                                        BEGIN
-                                        PRINT 'Error: Duplicate value. Either phone number or email already exists.';
-                                        END
-                                        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
-                                        BEGIN
-                                        PRINT 'Error: Foreign key violation.';
-                                        END
-
-
-
+                                            DECLARE @ErrorNumber INT = ERROR_NUMBER();
+                                            IF @ErrorNumber = 2627 -- Unique constraint violation error code
+                                            BEGIN
+                                                PRINT 'Error: Duplicate value. Either phone number or email already exists.';
+                                            END
+                                            ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+                                            BEGIN
+                                                PRINT 'Error: Foreign key violation.';
+                                            END
                                         END CATCH
                                     END
                                     ELSE
@@ -589,6 +558,7 @@ BEGIN
         PRINT 'Error: Child first name should contain only letters.';
     END
 END;
+
 
 
 
