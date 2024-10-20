@@ -1,6 +1,11 @@
--- these procedures can be used to quickly view the stored data instead of using longer select statement
 CREATE DATABASE qrSystemDPG
 USE qrSystemDPG
+
+
+-- these procedures can be used to quickly view the stored data instead of using longer select statement
+
+
+
 CREATE PROC viewAdmin
 AS
 BEGIN
