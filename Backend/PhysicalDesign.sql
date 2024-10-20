@@ -1,5 +1,6 @@
--- CREATE DATABASE qrSystemDPG
--- USE qrSystemDPG
+CREATE DATABASE qrSystemDPG
+USE qrSystemDPG
+
 
 
 -- DROP TABLE class
@@ -38,7 +39,7 @@ CREATE TABLE child (
     emergency_contact_last_name VARCHAR(30),
     gender CHAR(1) NOT NULL,
     class_id INT,
-    C CHAR(11) NOT NULL UNIQUE,  -- Enforce one-to-one relationship
+    parent_id_number CHAR(11) NOT NULL UNIQUE,  -- Enforce one-to-one relationship
     FOREIGN KEY (parent_id_number) REFERENCES parent(parent_id_number),
     FOREIGN KEY (class_id) REFERENCES class(class_id)
 );
@@ -50,7 +51,7 @@ CREATE TABLE qrcode (
     drop_off_date DATE NOT NULL,
     parent_id_number CHAR(11) NOT NULL,
     child_id INT,
-	picked_up BIT,
+	picked_up BIT DEFAULT 0,
 	file_path VARCHAR(255),
     FOREIGN KEY (parent_id_number) REFERENCES parent(parent_id_number),
     FOREIGN KEY (child_id) REFERENCES child(child_id)
@@ -62,9 +63,7 @@ CREATE TABLE pickup (
     pickup_time TIME NOT NULL,
     pickup_date DATE NOT NULL,
     qrcode_id INT NOT NULL,
-    child_id INT NOT NULL,
-    FOREIGN KEY (qrcode_id) REFERENCES qrcode(qrcode_id),
-    FOREIGN KEY (child_id) REFERENCES child(child_id)
+    FOREIGN KEY (qrcode_id) REFERENCES qrcode(qrcode_id)
 );
 
 CREATE TABLE adminTable (
@@ -85,3 +84,4 @@ CREATE TABLE audit_log (
     performed_by_admin_id INT,
     table_name VARCHAR(255) NOT NULL
 );
+

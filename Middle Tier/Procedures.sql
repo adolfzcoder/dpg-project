@@ -293,75 +293,88 @@ VALUES
 
 EXEC viewQr
 
-EXEC spPickupVerification 'John', 'Kavango', '82010154321'
+EXEC spPickupVerification 'John', 'Kavango', '82010154321', 'John_Kavango_2024-10-20 19:00:21', 'John_Kavango_2024-10-20 19:00:21'
 
 CREATE PROCEDURE spPickupVerification
-
-@child_first_name VARCHAR(30),
-@child_last_name VARCHAR(30),
-@parent_id_number CHAR(11),
-
-@child_verification_code INT,
-@parent_verification_code INT
-
+    @child_first_name VARCHAR(30),
+    @child_last_name VARCHAR(30),
+    @parent_id_number CHAR(11),
+    @child_verification_code VARCHAR(30),
+    @parent_verification_code VARCHAR(30)
 AS
 BEGIN
+    DECLARE @child_id INT;
+    DECLARE @first_name_from_db VARCHAR(30);
+    DECLARE @last_name_from_db VARCHAR(30);
+    DECLARE @parent_id_number_from_db CHAR(11);
+    DECLARE @child_verification_code_from_db VARCHAR(70); -- first name, last name, timestamp are 30, 30, 18 char so it can be 70 length
+    DECLARE @verification_from_db VARCHAR(255);
+    DECLARE @qr_code_url VARCHAR(255);
 
-DECLARE @child_id INT;
-DECLARE @first_name_from_db VARCHAR(30);
-DECLARE @last_name_from_db VARCHAR(30);
-DECLARE @parent_id_number_from_db CHAR(11);
-DECLARE @child_verification_code_from_db VARCHAR(70); -- first name, last name, timestamp are 30, 30, 18 char so it can be 70 length
-DECLARE @verification_from_db INT;
-DECLARE @qr_code_url VARCHAR(255);
+    -- Retrieve child and parent details
+    SELECT  @first_name_from_db = first_name, 
+            @last_name_from_db = last_name,
+            @parent_id_number_from_db = parent_id_number,
+            @child_id = child_id
+    FROM child
+    WHERE first_name = @child_first_name AND 
+          last_name = @child_last_name AND 
+          parent_id_number = @parent_id_number;
 
--- Retrieve child and parent details
-SELECT  @first_name_from_db = first_name, 
-        @last_name_from_db = last_name,
-        @parent_id_number_from_db = parent_id_number,
-        @child_id = child_id
-       
-FROM child
-WHERE first_name = @child_first_name AND 
-      last_name = @child_last_name AND 
-      parent_id_number = @parent_id_number;
-
--- Retrieve the qr_code_url from the qrcode table where picked_up is 0
-SELECT @qr_code_url = qr_code_url
-FROM qrcode
-WHERE child_id = @child_id AND picked_up = 0;
-
--- Check if qr_code_url was found
-IF @qr_code_url IS NOT NULL
-BEGIN
-    -- Find the position of the timestamp in the URL
-    DECLARE @start_pos INT = CHARINDEX('data=', @qr_code_url) + 5;
-    DECLARE @end_pos INT = CHARINDEX('_&color=', @qr_code_url);
-
-    -- Extract the substring that represents the timestamp
-    SET @child_verification_code_from_db = SUBSTRING(@qr_code_url, @start_pos, @end_pos - @start_pos);
-
-    PRINT @child_verification_code_from_db;
-
-    -- Update the picked_up status to 1
-    UPDATE qrcode
-    SET picked_up = 1
+    -- Retrieve the qr_code_url from the qrcode table where picked_up is 0
+    SELECT @qr_code_url = qr_code_url
+    FROM qrcode
     WHERE child_id = @child_id AND picked_up = 0;
-END
-ELSE
-BEGIN
-    PRINT 'Error: No QR code found for the child with picked_up status 0.';
+
+    -- Check if qr_code_url was found
+    IF @qr_code_url IS NOT NULL
+    BEGIN
+        -- Find the position of the timestamp in the URL
+        DECLARE @start_pos INT = CHARINDEX('data=', @qr_code_url) + 5;
+        DECLARE @end_pos INT = CHARINDEX('_&color=', @qr_code_url);
+
+        -- Check if the positions are valid
+        IF @start_pos > 5 AND @end_pos > @start_pos
+        BEGIN
+            -- Extract the substring that represents the timestamp
+            SET @child_verification_code_from_db = SUBSTRING(@qr_code_url, @start_pos, @end_pos - @start_pos);
+
+            PRINT @child_verification_code_from_db;
+
+            -- Compare the extracted timestamp with the provided verification codes
+            IF @child_verification_code_from_db = @child_verification_code AND @child_verification_code_from_db = @parent_verification_code
+            BEGIN
+                -- Update the picked_up status to 1
+                UPDATE qrcode
+                SET picked_up = 1
+                WHERE child_id = @child_id AND picked_up = 0;
+
+                PRINT 'Pickup verification successful.';
+            END
+            ELSE
+            BEGIN
+                PRINT 'Error: Verification codes do not match.';
+            END
+        END
+        ELSE
+        BEGIN
+            PRINT 'Error: Invalid QR code URL format.';
+        END
+    END
+    ELSE
+    BEGIN
+        PRINT 'Error: No QR code found for the child with status picked up. Child is already picked up';
+    END;
 END;
 
-END
 
-
-
-
+https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=John_Kavango_2024-10-20 19:00:21&color=000000&qzone=4
 
 
 DELETE FROM qrcode
 EXEC spGenerateQrCode 'John', 'Kavango'
+EXEC spPickupVerification 'John', 'Kavango', '82010154321', 'John_Kavango_2024-10-20 19:00:21', 'John_Kavango_2024-10-20 19:00:21'
+
 EXEC viewQr
 EXEC viewChild
 SELECT qr_code_url FROM qrcode 
@@ -414,10 +427,10 @@ BEGIN
                     RETURN;
                 END
 
-                SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + '_' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120) + '&color=f3846c&qzone=4';
+                SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @first_name + ' ' + @last_name + '_' + CONVERT(VARCHAR, @timestamp, 120) +'_'+ '&color=f3846c&qzone=4';
 
-                INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id)
-                VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id);
+                INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id, picked_up)
+                VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id, 0);
 
                 COMMIT TRANSACTION;
                 PRINT 'QR code generated and stored successfully';
@@ -450,7 +463,6 @@ BEGIN
 
     END CATCH
 END;
-
 -- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, home_address)
 -- VALUES 
 -- ('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek')
