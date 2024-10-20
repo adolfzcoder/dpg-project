@@ -50,7 +50,7 @@ BEGIN
 
                 -- Generate the QR code URL with the truncated UUID
                 SET @short_uuid = LEFT(CONVERT(VARCHAR(36), @uuid), 16);
-                SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @short_uuid + '&color=f3846c&qzone=4';
+                SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @short_uuid + '&qzone=4';
 
                 INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id, picked_up)
                 VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id, 0);

@@ -9,7 +9,7 @@ CREATE TABLE class (
     class_name VARCHAR(30),
     start_time TIME NOT NULL,
     venue VARCHAR(30) NOT NULL,
-    has_projector BIT NULL,
+    has_projector VARCHAR(3) NULL,
     end_time TIME NOT NULL,
     age_range_start INT,
     age_range_end INT

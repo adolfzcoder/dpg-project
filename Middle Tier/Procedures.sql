@@ -445,7 +445,7 @@ BEGIN
 
                 -- Generate the QR code URL with the truncated UUID
                 SET @short_uuid = LEFT(CONVERT(VARCHAR(36), @uuid), 16);
-                SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @short_uuid + '&color=f3846c&qzone=4';
+                SET @qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + @short_uuid + '&qzone=4';
 
                 INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id, picked_up)
                 VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id, 0);
@@ -746,7 +746,7 @@ CREATE PROCEDURE spAddClass
     @class_name VARCHAR(30),
     @start_time TIME,
     @venue VARCHAR(30),
-    @has_projector BIT,
+    @has_projector VARCHAR(3),
     @end_time TIME,
     @age_range_start INT,
     @age_range_end INT
@@ -765,23 +765,28 @@ BEGIN
         RETURN;
     END 
 
+    IF LOWER(@has_projector) NOT IN ('yes', 'no')
+    BEGIN
+        RAISERROR('Invalid value for has_projector. It must be either "yes" or "no".', 16, 1);
+        RETURN;
+    END
+
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- Insert class details
         INSERT INTO class (class_name, start_time, venue, has_projector, end_time, age_range_start, age_range_end)
         VALUES (@class_name, @start_time, @venue, @has_projector, @end_time, @age_range_start, @age_range_end);
 
         COMMIT TRANSACTION;
+        PRINT 'Class added successfully.';
     END TRY
     BEGIN CATCH
-        -- Rollback transaction in case of error
         ROLLBACK TRANSACTION;
-
-        -- Call the error handling procedure
-        EXEC spHandleError;
+        PRINT 'An error occurred while adding the class.';
     END CATCH
 END;
+
+
 
 
 
