@@ -69,7 +69,34 @@ END
 --     created_at DATETIME DEFAULT GETDATE()
 -- );
 
+
+
+CREATE PROCEDURE spHandleError
+AS
+BEGIN
+    DECLARE @ErrorNumber INT,
+            @ErrorSeverity INT,
+            @ErrorProcedure NVARCHAR(128),
+            @ErrorMessage NVARCHAR(4000);
+
+    -- Retrieve error details
+    SET @ErrorNumber = ERROR_NUMBER();
+    SET @ErrorSeverity = ERROR_SEVERITY();
+    SET @ErrorProcedure = ERROR_PROCEDURE();
+    SET @ErrorMessage = ERROR_MESSAGE();
+
+    PRINT 'Error Number: ' + CAST(@ErrorNumber AS VARCHAR(10));
+    PRINT 'Error Severity: ' + CAST(@ErrorSeverity AS VARCHAR(10));
+    PRINT 'Error Procedure: ' + ISNULL(@ErrorProcedure, 'N/A');
+    PRINT 'Error Message: ' + @ErrorMessage;
+
+
+END;
+
+
 -- In order to allow adding a new admin, we have to make sure that the user that is trying to add a new admin has a role of superadmin. Their role is set when they login, using the spAdminLoginVerification procedure. We store the information about logged in user in session context values, which we can later use. We can then compare the role of the currently logged to check if its a regular admin or superadmin.
+
+
 CREATE PROCEDURE spAddAdmin
 @username VARCHAR(30),
 @password VARCHAR(50),
@@ -565,38 +592,6 @@ END;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- Insert sample data into the class table
-INSERT INTO class (class_name, start_time, venue, has_projector, end_time, age_range_start, age_range_end)
-VALUES 
-('Nursery', '08:00', 'Room 101', 0, '12:00', 'TCH001', 3, 4),
-('Pre-K', '08:00', 'Room 102', 1, '12:00', 'TCH002', 4, 5),
-('Kindergarten', '08:00', 'Room 103', 1, '12:00', 'TCH003', 5, 6);
-
-
-
-
 CREATE PROCEDURE spAddParent
     @parent_id_number CHAR (11),
     @first_name VARCHAR(30),
@@ -675,8 +670,7 @@ BEGIN
         PRINT 'Error: First name should contain only letters.';
     END
 END;
-
-
+-- 
 CREATE PROCEDURE spAddClass
     @class_name VARCHAR(30),
     @start_time TIME,

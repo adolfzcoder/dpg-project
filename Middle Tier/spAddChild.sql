@@ -64,6 +64,13 @@ BEGIN
                                     DECLARE @child_age INT;
                                     SET @child_age = DATEDIFF(YEAR, @date_of_birth, GETDATE());
 
+                                    -- Check if the child's age is greater than 17
+                                    IF @child_age > 17
+                                    BEGIN
+                                        PRINT 'Error: Age should be 17 years or less.';
+                                        RETURN;
+                                    END
+
                                     -- Find the appropriate class for the child's age
                                     DECLARE @class_id INT;
                                     SELECT TOP 1 @class_id = class_id
@@ -102,23 +109,17 @@ BEGIN
                                         BEGIN CATCH
                                             ROLLBACK TRANSACTION;
                                             PRINT 'There was an error inserting into system, please try again';
+                                            EXEC spHandleError;
 
-
-                                            
-                                        EXEC spHandleError;
-
-                                        DECLARE @ErrorNumber INT = ERROR_NUMBER();
-                                        IF @ErrorNumber = 2627 -- Unique constraint violation error code
-                                        BEGIN
-                                        PRINT 'Error: Duplicate value. Either phone number or email already exists.';
-                                        END
-                                        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
-                                        BEGIN
-                                        PRINT 'Error: Foreign key violation.';
-                                        END
-
-
-
+                                            DECLARE @ErrorNumber INT = ERROR_NUMBER();
+                                            IF @ErrorNumber = 2627 -- Unique constraint violation error code
+                                            BEGIN
+                                                PRINT 'Error: Duplicate value. Either phone number or email already exists.';
+                                            END
+                                            ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+                                            BEGIN
+                                                PRINT 'Error: Foreign key violation.';
+                                            END
                                         END CATCH
                                     END
                                     ELSE
@@ -166,4 +167,3 @@ BEGIN
         PRINT 'Error: Child first name should contain only letters.';
     END
 END;
-
