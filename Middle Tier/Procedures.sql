@@ -395,7 +395,8 @@ SELECT qr_code_url FROM qrcode
 DELETE FROM qrcode
 CREATE PROCEDURE spGenerateQrCode
     @first_name VARCHAR(30),
-    @last_name VARCHAR(30)
+    @last_name VARCHAR(30),
+    @qr_code_url_out VARCHAR(255) OUTPUT
 AS
 BEGIN
     DECLARE @qr_code_url VARCHAR(255);
@@ -449,6 +450,9 @@ BEGIN
                 INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id, picked_up)
                 VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id, 0);
 
+                -- Set the output parameter
+                SET @qr_code_url_out = @qr_code_url;
+
                 COMMIT TRANSACTION;
                 PRINT 'QR code generated and stored successfully';
             END
@@ -468,7 +472,15 @@ BEGIN
 
         EXEC spHandleError;
 
-        
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        IF @ErrorNumber = 2627 -- Unique constraint violation error code
+        BEGIN
+            PRINT 'Error: Duplicate value. Either phone number or email already exists.';
+        END
+        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+        BEGIN
+            PRINT 'Error: Foreign key violation.';
+        END
     END CATCH
 END;
 -- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, home_address)
