@@ -12,7 +12,7 @@
 -- );
 
 
-EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404'
+EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404', 'f'
 EXEC viewTeacher
 CREATE PROCEDURE spAddTeacher
 @teacher_id_number CHAR(11),

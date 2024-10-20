@@ -167,9 +167,3 @@ BEGIN
     END
 END;
 
--- Insert sample data into the class table
-INSERT INTO class (class_name, start_time, venue, has_projector, end_time, teacher_id_number, age_range_start, age_range_end)
-VALUES 
-('Nursery', '08:00', 'Room 101', 0, '12:00', 'TCH001', 3, 4),
-('Pre-K', '08:00', 'Room 102', 1, '12:00', 'TCH002', 4, 5),
-('Kindergarten', '08:00', 'Room 103', 1, '12:00', 'TCH003', 5, 6);

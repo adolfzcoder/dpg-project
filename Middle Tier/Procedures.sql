@@ -72,6 +72,7 @@ EXEC viewAdmin
 -- DELETE FROM adminTable
 
 
+
 CREATE PROCEDURE spAddAdmin
 @username VARCHAR(30),
 @password VARCHAR(50),
@@ -115,6 +116,19 @@ BEGIN
                 BEGIN CATCH
                     ROLLBACK TRANSACTION;
                     PRINT 'There was an error inserting into system, please try again';
+
+                    EXEC spHandleError;
+
+                                        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+                                        IF @ErrorNumber = 2627 -- Unique constraint violation error code
+                                        BEGIN
+                                        PRINT 'Error: Duplicate value. Either phone number or email already exists.';
+                                        END
+                                        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+                                        BEGIN
+                                        PRINT 'Error: Foreign key violation.';
+                                        END
+
                 END CATCH
             END
             ELSE
@@ -132,7 +146,6 @@ BEGIN
         PRINT 'Error: Username should contain only letters.';
     END
 END;
-
 CREATE PROCEDURE spAddParent
     @parent_id_number CHAR (11),
     @first_name VARCHAR(30),
@@ -204,9 +217,7 @@ END;
 EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
 -- DELETE  FROM adminTable
 
-
-EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
--- to keep track of the logged in admin, we use sessions, and we set the session context values for the logged in admin
+-- to keep track of the logged in admin, we use sessions, and we set the session context values for the logged in admin. That way we store, the admin username, the admin id, the admin role and the admin email, anywhere in the system, just by accessing the session variable
 CREATE PROCEDURE spAdminLoginVerification
 @email VARCHAR(45),
 @password VARCHAR(255)
@@ -231,6 +242,9 @@ BEGIN
 
             IF @email_exists > 0
             BEGIN
+
+
+            
                 -- Get stored password
                 SELECT @stored_password = password,
                        @admin_username = username,
@@ -272,9 +286,23 @@ BEGIN
     END TRY
     BEGIN CATCH
         PRINT 'An error occurred during login verification';
+
+        EXEC spHandleError;
+
+                                        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+                                        IF @ErrorNumber = 2627 -- Unique constraint violation error code
+                                        BEGIN
+                                        PRINT 'Error: Duplicate value. Either phone number or email already exists.';
+                                        END
+                                        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+                                        BEGIN
+                                        PRINT 'Error: Foreign key violation.';
+                                        END
+
+
+
     END CATCH
 END;
-
 
 
 EXEC viewChild;
@@ -385,8 +413,22 @@ BEGIN
     BEGIN CATCH
         ROLLBACK TRANSACTION;
         PRINT 'An error occurred during QR code generation';
+
+        EXEC spHandleError;
+
+                                        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+                                        IF @ErrorNumber = 2627 -- Unique constraint violation error code
+                                        BEGIN
+                                        PRINT 'Error: Duplicate value. Either phone number or email already exists.';
+                                        END
+                                        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+                                        BEGIN
+                                        PRINT 'Error: Foreign key violation.';
+                                        END
+
     END CATCH
 END;
+
 -- INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, town)
 -- VALUES 
 -- ('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek')
@@ -465,6 +507,7 @@ BEGIN
                                 BEGIN
                                     SET @gender = 'F';
                                 END
+
                                 IF @date_of_birth <= GETDATE()
                                 BEGIN
                                     -- Calculate the child's age
@@ -509,6 +552,23 @@ BEGIN
                                         BEGIN CATCH
                                             ROLLBACK TRANSACTION;
                                             PRINT 'There was an error inserting into system, please try again';
+
+
+                                            
+                                        EXEC spHandleError;
+
+                                        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+                                        IF @ErrorNumber = 2627 -- Unique constraint violation error code
+                                        BEGIN
+                                        PRINT 'Error: Duplicate value. Either phone number or email already exists.';
+                                        END
+                                        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+                                        BEGIN
+                                        PRINT 'Error: Foreign key violation.';
+                                        END
+
+
+
                                         END CATCH
                                     END
                                     ELSE
@@ -568,7 +628,6 @@ END;
 
 
 
-
 EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404', 'female'
 EXEC viewTeacher
 
@@ -586,7 +645,7 @@ EXEC viewTeacher
 -- );
 
 
-EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404'
+EXEC spAddTeacher '0008178803', 'Joana', 'Lojiko', '0817194729', 'jlojiko@yahoo.com', 'Omangongatti', '404', 'f'
 EXEC viewTeacher
 CREATE PROCEDURE spAddTeacher
 @teacher_id_number CHAR(11),
@@ -678,7 +737,6 @@ BEGIN
     PRINT 'Error: First name should contain only letters.';
   END
 END;
-
 
 
 
@@ -923,6 +981,18 @@ BEGIN
                         BEGIN CATCH
                             ROLLBACK TRANSACTION
                             PRINT 'There was an error inserting into system, please try again';
+                        EXEC spHandleError;
+
+                                        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+                                        IF @ErrorNumber = 2627 -- Unique constraint violation error code
+                                        BEGIN
+                                        PRINT 'Error: Duplicate value. Either phone number or email already exists.';
+                                        END
+                                        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+                                        BEGIN
+                                        PRINT 'Error: Foreign key violation.';
+                                        END
+
                         END CATCH
                     END
                     ELSE

@@ -11,7 +11,7 @@
 
 
 
--- to keep track of the logged in admin, we use sessions, and we set the session context values for the logged in admin
+-- to keep track of the logged in admin, we use sessions, and we set the session context values for the logged in admin. That way we store, the admin username, the admin id, the admin role and the admin email, anywhere in the system, just by accessing the session variable
 CREATE PROCEDURE spAdminLoginVerification
 @email VARCHAR(45),
 @password VARCHAR(255)
@@ -80,5 +80,20 @@ BEGIN
     END TRY
     BEGIN CATCH
         PRINT 'An error occurred during login verification';
+
+        EXEC spHandleError;
+
+                                        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+                                        IF @ErrorNumber = 2627 -- Unique constraint violation error code
+                                        BEGIN
+                                        PRINT 'Error: Duplicate value. Either phone number or email already exists.';
+                                        END
+                                        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
+                                        BEGIN
+                                        PRINT 'Error: Foreign key violation.';
+                                        END
+
+
+
     END CATCH
 END;
