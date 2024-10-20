@@ -65,9 +65,15 @@ BEGIN
                                     SET @child_age = DATEDIFF(YEAR, @date_of_birth, GETDATE());
 
                                     -- Check if the child's age is greater than 17
-                                    IF @child_age > 17
+                                    IF @child_age > 17 
                                     BEGIN
                                         PRINT 'Error: Age should be 17 years or less.';
+                                        RETURN;
+                                    END
+
+                                    IF @child_age < 0 
+                                    BEGIN
+                                        PRINT 'Error: Age should be more than 1 or more years';
                                         RETURN;
                                     END
 
