@@ -23,7 +23,7 @@ END;
 
 
 
--- trg for update on qr table
+-- trg for update on qr table  then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_qrcode_update
 ON qrcode
 AFTER UPDATE
@@ -43,7 +43,7 @@ END;
 
 
 
---triggwr for insert on teachers table
+--triggwr for insert on teachers table then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_teacher_insert
 ON teacher
 AFTER INSERT
@@ -61,7 +61,7 @@ BEGIN
     VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
--- this trigger is fired after any updates to the teacher tble
+-- this trigger is fired after any updates to the teacher tble then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_teacher_update
 ON teacher
 AFTER UPDATE
@@ -79,9 +79,9 @@ BEGIN
     VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
--- Repeat similar triggers for other tables
 
--- Trigger for INSERT on class table
+
+-- Trigger for INSERT on class table  then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_class_insert
 ON class
 AFTER INSERT
@@ -99,7 +99,7 @@ BEGIN
     VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
--- Trigger for UPDATE on class table
+-- Trigger for UPDATE on class table  then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_class_update
 ON class
 AFTER UPDATE
@@ -117,9 +117,8 @@ BEGIN
     VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
--- Repeat similar triggers for other tables (parent, child, qrcode, pickup, adminTable)
 
--- Trigger for INSERT on parent table
+-- Trigger for INSERT on parent table  then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_parent_insert
 ON parent
 AFTER INSERT
@@ -137,7 +136,7 @@ BEGIN
     VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
--- Trigger for UPDATE on parent table
+-- Trigger for UPDATE on parent table  then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_parent_update
 ON parent
 AFTER UPDATE
@@ -154,7 +153,7 @@ BEGIN
     INSERT INTO audit_log (action, new_values, timestamp, performed_by_admin_id, @table_name);
 END;
 
--- Trigger for INSERT on child table
+-- fired after insert to child table then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_child_insert
 ON child
 AFTER INSERT
@@ -172,7 +171,7 @@ BEGIN
     VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
--- trg for update on qr table
+-- trg for update on qr table then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_child_update
 ON child
 AFTER UPDATE
@@ -191,7 +190,7 @@ BEGIN
 END;
 
 
--- fired afer insert to pickup table 
+-- fired afer insert to pickup table  then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_pickup_insert
 ON pickup
 AFTER INSERT
@@ -209,7 +208,7 @@ BEGIN
     VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
--- fired afer update to pickup table 
+-- fired afer update to pickup table  then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_pickup_update
 ON pickup
 AFTER UPDATE
@@ -227,7 +226,7 @@ BEGIN
     VALUES ('UPDATE', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
--- this trigger is fired after any insert to the teacher tble
+-- this trigger is fired after any insert to the teacher tble then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 CREATE TRIGGER trg_adminTable_insert
 ON adminTable
 AFTER INSERT
@@ -245,7 +244,7 @@ BEGIN
     VALUES ('INSERT', @new_values, @current_timestamp, @admin_id, @table_name);
 END;
 
--- this trigger is fired after any updates to the admin tble
+-- this trigger is fired after any updates to the admin tble then inserts into the log table, the new values, and admin_id, which is stored after admin logs in
 
 CREATE TRIGGER trg_adminTable_update
 ON adminTable
