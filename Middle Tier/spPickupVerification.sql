@@ -2,15 +2,15 @@ CREATE PROCEDURE spPickupVerification
     @child_first_name VARCHAR(30),
     @child_last_name VARCHAR(30),
     @parent_id_number CHAR(11),
-    @child_verification_code VARCHAR(30),
-    @parent_verification_code VARCHAR(30)
+    @child_verification_code VARCHAR(16),
+    @parent_verification_code VARCHAR(16)
 AS
 BEGIN
     DECLARE @child_id INT;
     DECLARE @first_name_from_db VARCHAR(30);
     DECLARE @last_name_from_db VARCHAR(30);
     DECLARE @parent_id_number_from_db CHAR(11);
-    DECLARE @child_verification_code_from_db VARCHAR(70); -- first name, last name, timestamp are 30, 30, 18 char so it can be 70 length
+    DECLARE @child_verification_code_from_db VARCHAR(16); -- UUID is 16 characters long
     DECLARE @verification_from_db VARCHAR(255);
     DECLARE @qr_code_url VARCHAR(255);
 
@@ -32,19 +32,19 @@ BEGIN
     -- Check if qr_code_url was found
     IF @qr_code_url IS NOT NULL
     BEGIN
-        -- Find the position of the timestamp in the URL
+        -- Find the position of the UUID in the URL
         DECLARE @start_pos INT = CHARINDEX('data=', @qr_code_url) + 5;
-        DECLARE @end_pos INT = CHARINDEX('_&color=', @qr_code_url);
+        DECLARE @end_pos INT = CHARINDEX('&color=', @qr_code_url);
 
         -- Check if the positions are valid
         IF @start_pos > 5 AND @end_pos > @start_pos
         BEGIN
-            -- Extract the substring that represents the timestamp
-            SET @child_verification_code_from_db = SUBSTRING(@qr_code_url, @start_pos, @end_pos - @start_pos);
+            -- Extract the substring that represents the UUID
+            SET @child_verification_code_from_db = SUBSTRING(@qr_code_url, @start_pos, 16);
 
             PRINT @child_verification_code_from_db;
 
-            -- Compare the extracted timestamp with the provided verification codes
+            -- Compare the extracted UUID with the provided verification codes
             IF @child_verification_code_from_db = @child_verification_code AND @child_verification_code_from_db = @parent_verification_code
             BEGIN
                 -- Update the picked_up status to 1
