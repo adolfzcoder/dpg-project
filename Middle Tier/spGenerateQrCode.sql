@@ -77,23 +77,7 @@ BEGIN
 
         EXEC spHandleError;
 
-        DECLARE @ErrorNumber INT = ERROR_NUMBER();
-        IF @ErrorNumber = 2627 -- Unique constraint violation error code
-        BEGIN
-            PRINT 'Error: Duplicate value. Either phone number or email already exists.';
-        END
-        ELSE IF @ErrorNumber = 547 -- Foreign key violation error code
-        BEGIN
-            PRINT 'Error: Foreign key violation.';
-        END
+        
     END CATCH
 END;
 
-DECLARE @qr_code_url VARCHAR(255);
-
-EXEC spGenerateQrCode 
-    @first_name = 'John', 
-    @last_name = 'Kavango', 
-    @qr_code_url_out = @qr_code_url OUTPUT;
-
-PRINT 'Generated QR Code URL: ' + @qr_code_url;

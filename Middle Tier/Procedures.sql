@@ -388,9 +388,9 @@ END;
 DELETE FROM qrcode
 EXEC spGenerateQrCode 'John', 'Kavango'
 EXEC spPickupVerification 'John', 'Kavango', '82010154321', 'BA9A2F9C-DA3F-41', 'BA9A2F9C-DA3F-41'
-https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BA9A2F9C-DA3F-41&qzone=4
 EXEC viewQr
 EXEC viewChild
+
 SELECT qr_code_url FROM qrcode 
 
 DELETE FROM qrcode
@@ -803,6 +803,36 @@ BEGIN
         PRINT 'An error occurred while adding the class.';
     END CATCH
 END;
+
+
+CREATE PROCEDURE spGenerateDailyReport
+    @reportDate DATE
+AS
+BEGIN
+    DECLARE @reportContent VARCHAR(MAX);
+
+    SET @reportContent = (
+        SELECT 
+            'Class Report: ' + CHAR(13) + CHAR(10) +
+            'Total Classes: ' + CAST(COUNT(*) AS VARCHAR) + CHAR(13) + CHAR(10) +
+            'Total Students: ' + CAST((SELECT COUNT(*) FROM child) AS VARCHAR) + CHAR(13) + CHAR(10) +
+            'Total Parents: ' + CAST((SELECT COUNT(*) FROM parent) AS VARCHAR) + CHAR(13) + CHAR(10) +
+            'Total QR Codes: ' + CAST((SELECT COUNT(*) FROM qrcode WHERE drop_off_date = @reportDate) AS VARCHAR) + CHAR(13) + CHAR(10) +
+            'Total Pickups: ' + CAST((SELECT COUNT(*) FROM pickup WHERE pickup_date = @reportDate) AS VARCHAR) + CHAR(13) + CHAR(10)
+        FROM class
+    );
+
+    -- Insert the generated report into the reports table
+    INSERT INTO reports (report_date, report_content)
+    VALUES (@reportDate, @reportContent);
+
+    PRINT 'Daily report generated and inserted successfully.';
+
+    SELECT * FROM reports WHERE report_date = @reportDate;
+END;
+
+
+
 
 
 
