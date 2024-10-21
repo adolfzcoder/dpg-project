@@ -18,3 +18,8 @@ EXEC spAddParent '99051790321', 'Adolf', 'Chikombo', '0816166785', 'adavid@muhok
 EXEC spAddChild 'John', 'Kavango', '2018-05-15', '0811234567', 'Peter', 'Kavango', 'Male', '82010154321'
 
 -- Generate the qr code
+
+
+-- Generate report
+
+EXEC spGenerateDailyReport '2023-10-01';

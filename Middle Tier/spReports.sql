@@ -1,3 +1,10 @@
+-- CREATE TABLE reports (
+--     report_id INT PRIMARY KEY IDENTITY,
+--     report_date DATE NOT NULL,
+--     report_content VARCHAR(MAX) NOT NULL,
+--     generated_at DATETIME DEFAULT GETDATE()
+-- );
+
 CREATE PROCEDURE spGenerateDailyReport
     @reportDate DATE
 AS
