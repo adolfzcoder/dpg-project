@@ -123,6 +123,14 @@ BEGIN
                 BEGIN TRY
                     BEGIN TRANSACTION;
 
+                    	DECLARE @emailCursor CURSOR FOR
+				SELECT COUNT(*)
+				FROM adminTable
+				WHERE email = @email;
+			OPEN @emailCursor;
+			FETCH NEXT FROM @emailCursor INTO @email_exists;
+			CLOSE @emailCursor;
+			DEALLOCATE @emailCursor;
 					-- Check if the email already exists
 
                     SELECT @email_exists = COUNT(*)
@@ -141,6 +149,13 @@ BEGIN
 					DEALLOCATE @emailCursor;
 
 
+                    	IF @email_exists > 0
+                    	BEGIN
+                        	PRINT 'Email already exists';
+                        	ROLLBACK TRANSACTION;
+                        	RETURN;
+                    	END
+                    
                     IF @email_exists > 0
                     BEGIN
                         PRINT 'Email already exists';
