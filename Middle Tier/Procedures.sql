@@ -145,17 +145,21 @@ BEGIN
                 BEGIN TRY
                     BEGIN TRANSACTION;
 
-                    -- Check if the email already exists
-                    SELECT @email_exists = COUNT(*)
-                    FROM adminTable
-                    WHERE email = @email;
+                    	DECLARE @emailCursor CURSOR FOR
+				SELECT COUNT(*)
+				FROM adminTable
+				WHERE email = @email;
+			OPEN @emailCursor;
+			FETCH NEXT FROM @emailCursor INTO @email_exists;
+			CLOSE @emailCursor;
+			DEALLOCATE @emailCursor;
 
-                    IF @email_exists > 0
-                    BEGIN
-                        PRINT 'Email already exists';
-                        ROLLBACK TRANSACTION;
-                        RETURN;
-                    END
+                    	IF @email_exists > 0
+                    	BEGIN
+                        	PRINT 'Email already exists';
+                        	ROLLBACK TRANSACTION;
+                        	RETURN;
+                    	END
                     
                     -- Insert into adminTable
                     INSERT INTO adminTable (username, password, email, phone_number)
