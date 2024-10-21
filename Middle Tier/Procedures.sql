@@ -1,5 +1,6 @@
 CREATE DATABASE qrSystemDPG
 USE qrSystemDPG
+DROP DATABASE qrSystemDPG
 
 
 -- these procedures can be used to quickly view the stored data instead of using longer select statement
@@ -58,18 +59,6 @@ END
 -- Use this to test and see the values needed for this procedure
 --EXEC viewAdmin
 
--- DELETE FROM adminTable
--- CREATE TABLE adminTable (
---     admin_id INT PRIMARY KEY IDENTITY,
---     username VARCHAR(30) NOT NULL UNIQUE,
---     password VARCHAR(255) NOT NULL,
---     email VARCHAR(45) NOT NULL UNIQUE,
---     role VARCHAR(20) DEFAULT 'admin',  -- 'admin' or 'superadmin', superadmins can add other admins
---     phone_number CHAR(10) UNIQUE,
---     created_at DATETIME DEFAULT GETDATE()
--- );
-
-
 
 CREATE PROCEDURE spHandleError
 AS
@@ -94,24 +83,13 @@ BEGIN
 END;
 
 
+
 -- In order to allow adding a new admin, we have to make sure that the user that is trying to add a new admin has a role of superadmin. Their role is set when they login, using the spAdminLoginVerification procedure. We store the information about logged in user in session context values, which we can later use. We can then compare the role of the currently logged to check if its a regular admin or superadmin.
 
 -- EXEC addAdmin 'Adolf', 'Pass@123', 'adolfdavid17@gmail.com', '0816166875'
 -- Use this to test and see the values needed for this procedure
 --EXEC viewAdmin
 
--- DELETE FROM adminTable
--- CREATE TABLE adminTable (
---     admin_id INT PRIMARY KEY IDENTITY,
---     username VARCHAR(30) NOT NULL UNIQUE,
---     password VARCHAR(255) NOT NULL,
---     email VARCHAR(45) NOT NULL UNIQUE,
---     role VARCHAR(20) DEFAULT 'admin',  -- 'admin' or 'superadmin', superadmins can add other admins
---     phone_number CHAR(10) UNIQUE,
---     created_at DATETIME DEFAULT GETDATE()
--- );
-
--- In order to allow adding a new admin, we have to make sure that the user that is trying to add a new admin has a role of superadmin. Their role is set when they login, using the spAdminLoginVerification procedure. We store the information about logged in user in session context values, which we can later use. We can then compare the role of the currently logged to check if its a regular admin or superadmin.
 CREATE PROCEDURE spAddAdmin
     @username VARCHAR(30),
     @password VARCHAR(50),
@@ -145,10 +123,23 @@ BEGIN
                 BEGIN TRY
                     BEGIN TRANSACTION;
 
-                    -- Check if the email already exists
+					-- Check if the email already exists
+
                     SELECT @email_exists = COUNT(*)
                     FROM adminTable
                     WHERE email = @email;
+					--cursor to get the number
+
+					DECLARE @emailCursor CURSOR;
+					SET @emailCursor = CURSOR FOR
+						SELECT COUNT(*)
+						FROM adminTable
+						WHERE email = @email;
+					OPEN @emailCursor;
+					FETCH NEXT FROM @emailCursor INTO @email_exists;
+					CLOSE @emailCursor;
+					DEALLOCATE @emailCursor;
+
 
                     IF @email_exists > 0
                     BEGIN
@@ -156,7 +147,7 @@ BEGIN
                         ROLLBACK TRANSACTION;
                         RETURN;
                     END
-                    
+
                     -- Insert into adminTable
                     INSERT INTO adminTable (username, password, email, phone_number)
                     VALUES (@username, @password, @email, @phone_number);
@@ -196,6 +187,7 @@ BEGIN
         PRINT 'Error: Username should contain only letters.';
     END
 END;
+
 
 EXEC spAdminLoginVerification 'adolfdavid17@gmail.com', 'Pass@123'
 -- DELETE  FROM adminTable
@@ -294,12 +286,6 @@ EXEC viewClass
 
 
 
-INSERT INTO parent (parent_id_number, first_name, last_name, phone_number, email, home_address)
-VALUES 
-('99051790321', 'Adolf', 'Chikombo', '0816166785', 'adavid@muhoko.org', 'Otjiarare')
-
-,
-('82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek');
 
 INSERT INTO child (child_id, first_name, last_name, date_of_birth, parent_id_number)
 VALUES 
@@ -346,7 +332,7 @@ BEGIN
     BEGIN
         -- Find the position of the UUID in the URL
         DECLARE @start_pos INT = CHARINDEX('data=', @qr_code_url) + 5;
-        DECLARE @end_pos INT = CHARINDEX('&color=', @qr_code_url);
+        DECLARE @end_pos INT = CHARINDEX('&qzone=', @qr_code_url);
 
         -- Check if the positions are valid
         IF @start_pos > 5 AND @end_pos > @start_pos
@@ -386,17 +372,16 @@ END;
 
 DELETE FROM qrcode
 EXEC spGenerateQrCode 'John', 'Kavango'
-EXEC spPickupVerification 'John', 'Kavango', '82010154321', 'John_Kavango_2024-10-20 19:00:21', 'John_Kavango_2024-10-20 19:00:21'
-
+EXEC spPickupVerification 'John', 'Kavango', '82010154321', 'BA9A2F9C-DA3F-41', 'BA9A2F9C-DA3F-41'
+https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BA9A2F9C-DA3F-41&qzone=4
 EXEC viewQr
 EXEC viewChild
 SELECT qr_code_url FROM qrcode 
 
 DELETE FROM qrcode
-CREATE PROCEDURE spGenerateQrCode
+ALTER PROCEDURE spGenerateQrCode
     @first_name VARCHAR(30),
-    @last_name VARCHAR(30),
-    @qr_code_url_out VARCHAR(255) OUTPUT
+    @last_name VARCHAR(30)
 AS
 BEGIN
     DECLARE @qr_code_url VARCHAR(255);
@@ -450,8 +435,6 @@ BEGIN
                 INSERT INTO qrcode (qr_code_url, drop_off_time, drop_off_date, parent_id_number, child_id, picked_up)
                 VALUES (@qr_code_url, @drop_off_time, @drop_off_date, @parent_id_number, @child_id, 0);
 
-                -- Set the output parameter
-                SET @qr_code_url_out = @qr_code_url;
 
                 COMMIT TRANSACTION;
                 PRINT 'QR code generated and stored successfully';
@@ -496,7 +479,7 @@ PRINT 'Generated QR Code URL: ' + @qr_code_url;
 
 
 
-EXEC spAddChild 'John', 'Kavango', '2010-05-15', '0811234567', 'Peter', 'Kavango', 'Math 101', '82010154321'
+EXEC spAddChild 'John', 'Kavango', '2018-05-15', '0811234567', 'Peter', 'Kavango', 'Male', '82010154321'
 
 EXEC viewParent
 EXEC viewChild
@@ -667,7 +650,8 @@ END;
 
 
 
-
+EXEC spAddParent '82010154321', 'Anna', 'Kavango', '0819876543', 'annakavango@example.com', 'Windhoek', 'F'
+EXEC spAddParent '99051790321', 'Adolf', 'Chikombo', '0816166785', 'adavid@muhoko.org', 'Otjiarare', 'M'
 CREATE PROCEDURE spAddParent
     @parent_id_number CHAR (11),
     @first_name VARCHAR(30),
@@ -747,6 +731,20 @@ BEGIN
     END
 END;
 -- 
+
+
+
+
+EXEC spAddClass 'Nursery', '08:00:00', 'Room 101', 'yes', '12:00:00', 1, 2
+EXEC spAddClass 'Day Care', '09:00:00', 'Room 102', 'no', '13:00:00', 3, 5
+EXEC spAddClass 'Kindergarten', '08:30:00', 'Room 103', 'yes', '12:30:00', 6, 8
+EXEC spAddClass 'Grade 1', '09:00:00', 'Room 104', 'yes', '14:00:00', 7 ,9
+EXEC spAddClass 'Grade 2', '09:00:00', 'Room 105', 'yes', '14:00:00', 10, 12
+EXEC spAddClass 'Grade 3', '09:00:00', 'Room 106', 'yes', '14:00:00', 13, 17
+
+-- Verify the inserted data
+SELECT * FROM class;
+
 CREATE PROCEDURE spAddClass
     @class_name VARCHAR(30),
     @start_time TIME,
