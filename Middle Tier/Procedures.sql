@@ -805,12 +805,20 @@ BEGIN
 END;
 
 
+-- CREATE TABLE reports (
+--     report_id INT PRIMARY KEY IDENTITY,
+--     report_date DATE NOT NULL,
+--     report_content VARCHAR(MAX) NOT NULL,
+--     generated_at DATETIME DEFAULT GETDATE()
+-- );
+
 CREATE PROCEDURE spGenerateDailyReport
     @reportDate DATE
 AS
 BEGIN
     DECLARE @reportContent VARCHAR(MAX);
 
+    -- Generate report content based on the provided date
     SET @reportContent = (
         SELECT 
             'Class Report: ' + CHAR(13) + CHAR(10) +
@@ -828,14 +836,9 @@ BEGIN
 
     PRINT 'Daily report generated and inserted successfully.';
 
+    -- Select and return the inserted report
     SELECT * FROM reports WHERE report_date = @reportDate;
 END;
-
-
-
-
-
-
 
 
 
