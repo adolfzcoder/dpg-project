@@ -19,6 +19,11 @@ EXEC spAddChild 'John', 'Kavango', '2018-05-15', '0811234567', 'Peter', 'Kavango
 
 -- Generate the qr code
 
+EXEC spGenerateQrCode 'John', 'Kavango'
+
+-- pickup verification 
+-- BA9A2F9C-DA3F-41 is the uuid, that uniquely ideintifies who is picking up the child and the qr code
+EXEC spPickupVerification 'John', 'Kavango', '82010154321', 'BA9A2F9C-DA3F-41', 'BA9A2F9C-DA3F-41'
 
 -- Generate report
 
