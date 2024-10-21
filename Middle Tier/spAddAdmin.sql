@@ -1,19 +1,6 @@
 -- EXEC addAdmin 'Adolf', 'Pass@123', 'adolfdavid17@gmail.com', '0816166875'
 -- Use this to test and see the values needed for this procedure
 --EXEC viewAdmin
-
--- DELETE FROM adminTable
--- CREATE TABLE adminTable (
---     admin_id INT PRIMARY KEY IDENTITY,
---     username VARCHAR(30) NOT NULL UNIQUE,
---     password VARCHAR(255) NOT NULL,
---     email VARCHAR(45) NOT NULL UNIQUE,
---     role VARCHAR(20) DEFAULT 'admin',  -- 'admin' or 'superadmin', superadmins can add other admins
---     phone_number CHAR(10) UNIQUE,
---     created_at DATETIME DEFAULT GETDATE()
--- );
-
--- In order to allow adding a new admin, we have to make sure that the user that is trying to add a new admin has a role of superadmin. Their role is set when they login, using the spAdminLoginVerification procedure. We store the information about logged in user in session context values, which we can later use. We can then compare the role of the currently logged to check if its a regular admin or superadmin.
 CREATE PROCEDURE spAddAdmin
     @username VARCHAR(30),
     @password VARCHAR(50),
@@ -47,10 +34,23 @@ BEGIN
                 BEGIN TRY
                     BEGIN TRANSACTION;
 
-                    -- Check if the email already exists
+					-- Check if the email already exists
+
                     SELECT @email_exists = COUNT(*)
                     FROM adminTable
                     WHERE email = @email;
+					--cursor to get the number
+
+					DECLARE @emailCursor CURSOR;
+					SET @emailCursor = CURSOR FOR
+						SELECT COUNT(*)
+						FROM adminTable
+						WHERE email = @email;
+					OPEN @emailCursor;
+					FETCH NEXT FROM @emailCursor INTO @email_exists;
+					CLOSE @emailCursor;
+					DEALLOCATE @emailCursor;
+
 
                     IF @email_exists > 0
                     BEGIN

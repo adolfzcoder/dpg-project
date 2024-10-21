@@ -156,7 +156,7 @@ BEGIN
                         ROLLBACK TRANSACTION;
                         RETURN;
                     END
-
+                    
                     -- Insert into adminTable
                     INSERT INTO adminTable (username, password, email, phone_number)
                     VALUES (@username, @password, @email, @phone_number);
