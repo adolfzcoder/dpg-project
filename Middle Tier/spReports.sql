@@ -1,9 +1,4 @@
--- CREATE TABLE reports (
---     report_id INT PRIMARY KEY IDENTITY,
---     report_date DATE NOT NULL,
---     report_content VARCHAR(MAX) NOT NULL,
---     generated_at DATETIME DEFAULT GETDATE()
--- );
+-- EXEC spGenerateDailyReport '2023-10-01';
 
 CREATE PROCEDURE spGenerateDailyReport
     @reportDate DATE
@@ -32,3 +27,10 @@ BEGIN
     -- Select and return the inserted report
     SELECT * FROM reports WHERE report_date = @reportDate;
 END;
+
+-- CREATE TABLE reports (
+--     report_id INT PRIMARY KEY IDENTITY,
+--     report_date DATE NOT NULL,
+--     report_content VARCHAR(MAX) NOT NULL,
+--     generated_at DATETIME DEFAULT GETDATE()
+-- );
